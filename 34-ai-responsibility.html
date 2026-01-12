@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI와 나의 책임</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+        body { font-family: 'Noto Sans KR', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .bounce { animation: bounce 0.5s ease; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useRef } = React;
+        const MAX_SCORE = 100;
+
+        function AIResponsibility() {
+            const [stage, setStage] = useState(0);
+            const [totalScore, setTotalScore] = useState(0);
+            const [stage1Score, setStage1Score] = useState(0);
+            const [stage4Score, setStage4Score] = useState(0);
+            const [completedStages, setCompletedStages] = useState({
+                stage1: false, stage2: false, stage3: false, stage4: false, stage5: false
+            });
+            
+            const goToStage = (stageNum) => setStage(stageNum);
+
+            const markStageComplete = (stageKey) => {
+                setCompletedStages(prev => ({ ...prev, [stageKey]: true }));
+            };
+
+            const stages = [
+                { component: IntroStage },
+                { component: Stage1 },
+                { component: Stage2 },
+                { component: Stage3 },
+                { component: Stage4 },
+                { component: Stage5 }
+            ];
+            const CurrentComponent = stages[stage].component;
+
+            return (
+                <div className="min-h-screen py-8 px-4">
+                    <div className="max-w-5xl mx-auto">
+                        <div className="text-center mb-6 fade-in">
+                            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">🤝 AI와 나의 책임</h1>
+                            <p className="text-xl text-white opacity-90">책임감 있는 AI 사용법 배우기</p>
+                        </div>
+                        {/* 수정된 부분: stage <= 5로 변경하여 마지막 단계에서도 표시되도록 함 */}
+                        {stage > 0 && stage <= 5 && (
+                            <div className="mb-6 no-print">
+                                <div className="bg-white bg-opacity-20 rounded-2xl p-4 backdrop-blur-sm mb-4">
+                                    <div className="flex justify-between items-center">
+                                        <div className="text-white font-bold text-lg">
+                                            🏆 점수: <span className="text-yellow-300 text-2xl">{totalScore}</span> / {MAX_SCORE}점
+                                        </div>
+                                        <div className="text-white font-bold text-lg">📍 {stage}/5 단계</div>
+                                    </div>
+                                </div>
+                                <div className="bg-white bg-opacity-20 rounded-2xl p-4 backdrop-blur-sm">
+                                    <div className="flex justify-around items-center">
+                                        {['상황 판단', '원칙 학습', '체크리스트', '이해도 점검', '결과 확인'].map((title, idx) => {
+                                            const stageNum = idx + 1;
+                                            const isCurrentStage = stageNum === stage;
+                                            const isCompleted = completedStages[`stage${stageNum}`];
+                                            const canAccess = stageNum <= stage;
+                                            
+                                            return (
+                                                <button key={idx} onClick={() => canAccess && goToStage(stageNum)}
+                                                    disabled={!canAccess}
+                                                    className={`flex flex-col items-center px-2 py-2 rounded-xl transition-all duration-300 ${
+                                                        isCurrentStage ? 'bg-purple-500 text-white scale-110'
+                                                        : isCompleted ? 'bg-lime-400 text-white hover:scale-105'
+                                                        : canAccess ? 'bg-white bg-opacity-30 text-white hover:scale-105'
+                                                        : 'bg-white bg-opacity-10 text-white opacity-50 cursor-not-allowed'
+                                                    }`}>
+                                                    <div className="text-lg mb-1">
+                                                        {isCompleted ? '✓' : isCurrentStage ? '▶' : stageNum}
+                                                    </div>
+                                                    <div className="text-xs font-bold">{title}</div>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        <CurrentComponent
+                            goToStage={goToStage} 
+                            totalScore={totalScore}
+                            setTotalScore={setTotalScore}
+                            stage1Score={stage1Score}
+                            setStage1Score={setStage1Score}
+                            stage4Score={stage4Score}
+                            setStage4Score={setStage4Score}
+                            markStageComplete={markStageComplete}
+                        />
+                    </div>
+                </div>
+            );
+        }
+
+        function IntroStage({ goToStage }) {
+            return (
+                <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 fade-in">
+                    <div className="text-center mb-8">
+                        <div className="text-6xl mb-6 bounce">🤝</div>
+                        <h2 className="text-3xl font-bold text-gray-800 mb-4">AI와 함께하는 책임감 있는 미래</h2>
+                        <p className="text-lg text-gray-600 leading-relaxed mb-6">
+                            AI는 강력한 도구입니다. 하지만 어떻게 사용하느냐에 따라<br/>
+                            긍정적인 영향과 부정적인 영향을 모두 줄 수 있습니다.<br/>
+                            함께 책임감 있는 AI 사용법을 배워봅시다!
+                        </p>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 mb-8 border-2 border-purple-200">
+                        <h3 className="text-xl font-bold text-purple-800 mb-4">🎯 학습 목표</h3>
+                        <div className="space-y-3 text-left">
+                            <div className="flex items-start">
+                                <span className="text-2xl mr-3">⚖️</span>
+                                <p className="text-gray-700 flex-1">AI 사용 상황에서 <span className="font-bold">윤리적 판단</span>을 내릴 수 있다</p>
+                            </div>
+                            <div className="flex items-start">
+                                <span className="text-2xl mr-3">🛡️</span>
+                                <p className="text-gray-700 flex-1">AI 사용 시 <span className="font-bold">책임의 범위</span>를 이해할 수 있다</p>
+                            </div>
+                            <div className="flex items-start">
+                                <span className="text-2xl mr-3">✅</span>
+                                <p className="text-gray-700 flex-1"><span className="font-bold">실천 가능한 가이드라인</span>을 습득할 수 있다</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl p-6 mb-8 border-2 border-blue-200">
+                        <h3 className="text-xl font-bold text-blue-800 mb-4">🗺️ 학습 과정</h3>
+                        <div className="grid md:grid-cols-5 gap-3">
+                            {[
+                                { icon: '⚖️', title: '1단계', desc: '상황 판단' },
+                                { icon: '📚', title: '2단계', desc: '원칙 학습' },
+                                { icon: '✅', title: '3단계', desc: '체크리스트' },
+                                { icon: '🎯', title: '4단계', desc: '이해도 점검' },
+                                { icon: '🏆', title: '5단계', desc: '결과 확인' }
+                            ].map((step, idx) => (
+                                <div key={idx} className="bg-white rounded-xl p-3 text-center">
+                                    <div className="text-2xl mb-1">{step.icon}</div>
+                                    <div className="font-bold text-gray-800 text-xs mb-1">{step.title}</div>
+                                    <div className="text-xs text-gray-600">{step.desc}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <button onClick={() => goToStage(1)}
+                        className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xl font-bold py-5 px-8 rounded-2xl hover:shadow-2xl transform hover:scale-105 transition-all">
+                        🎯 학습 시작하기
+                    </button>
+                </div>
+            );
+        }
+
+        function Stage1({ goToStage, setStage1Score, setTotalScore, markStageComplete }) {
+            const [currentScenario, setCurrentScenario] = useState(0);
+            const [selectedAnswer, setSelectedAnswer] = useState(null);
+            const [showFeedback, setShowFeedback] = useState(false);
+            const [earnedScore, setEarnedScore] = useState(0);
+
+            const scenarios = [
+                {
+                    id: 's1',
+                    situation: '학교 과제로 "기후변화의 영향" 보고서를 작성해야 합니다. AI에게 전체 보고서를 작성하도록 요청하고, 그대로 제출했습니다.',
+                    options: [
+                        { id: 'a', text: '괜찮다', correct: false },
+                        { id: 'b', text: '문제 있다', correct: true }
+                    ],
+                    correctExplanation: '정답입니다! AI가 작성한 내용을 그대로 제출하는 것은 표절에 해당하며, 학습 기회를 놓치게 됩니다. AI는 참고 자료로만 활용하고, 자신의 생각과 분석을 담아야 합니다.',
+                    wrongExplanation: '아쉽습니다. AI가 작성한 내용을 자신의 것처럼 제출하는 것은 표절입니다. AI는 아이디어를 얻거나 초안을 작성하는 데 도움을 줄 수 있지만, 최종 결과물은 자신의 이해와 생각이 담겨야 합니다.',
+                    points: 10
+                },
+                {
+                    id: 's2',
+                    situation: '친구가 수학 문제를 어려워하고 있습니다. AI에게 문제를 입력하고 풀이 과정을 단계별로 설명해달라고 요청한 후, 친구와 함께 보며 원리를 이해하도록 도와주었습니다.',
+                    options: [
+                        { id: 'a', text: '괜찮다', correct: true },
+                        { id: 'b', text: '문제 있다', correct: false }
+                    ],
+                    correctExplanation: '정답입니다! AI를 학습 도구로 활용하여 개념을 이해하는 데 도움을 받는 것은 책임감 있는 사용입니다. 단순히 답만 복사하는 것이 아니라 풀이 과정을 함께 학습했다는 점이 중요합니다.',
+                    wrongExplanation: '이 경우는 괜찮습니다! AI를 단순히 답을 얻기 위한 도구가 아니라, 학습과 이해를 돕는 선생님처럼 활용했습니다. 풀이 과정을 함께 보며 원리를 이해했다면 올바른 AI 활용입니다.',
+                    points: 10
+                },
+                {
+                    id: 's3',
+                    situation: '온라인 쇼핑몰에서 구매한 제품이 마음에 들지 않아 부정적인 리뷰를 남기려고 합니다. AI에게 "이 제품을 비난하는 악의적인 리뷰를 작성해줘"라고 요청했습니다.',
+                    options: [
+                        { id: 'a', text: '괜찮다', correct: false },
+                        { id: 'b', text: '문제 있다', correct: true }
+                    ],
+                    correctExplanation: '정답입니다! AI를 이용해 악의적이거나 과장된 내용을 생성하는 것은 타인에게 피해를 줄 수 있습니다. 리뷰는 정직하고 객관적으로 작성해야 하며, AI를 부정적 목적으로 사용해서는 안 됩니다.',
+                    wrongExplanation: '문제가 있습니다. AI를 사용해 악의적이거나 과장된 콘텐츠를 만드는 것은 다른 소비자와 판매자 모두에게 피해를 줍니다. 불만이 있다면 사실에 기반한 정직한 피드백을 제공해야 합니다.',
+                    points: 10
+                },
+                {
+                    id: 's4',
+                    situation: '영어 이메일을 작성해야 하는데 자신이 없습니다. 한국어로 초안을 작성한 후, AI에게 영어로 번역하고 문법을 다듬어달라고 요청했습니다. AI의 결과를 검토하고 몇 가지 표현을 수정한 후 발송했습니다.',
+                    options: [
+                        { id: 'a', text: '괜찮다', correct: true },
+                        { id: 'b', text: '문제 있다', correct: false }
+                    ],
+                    correctExplanation: '정답입니다! 자신의 생각을 담은 초안을 작성하고, AI를 번역과 문법 개선 도구로 활용했습니다. 최종적으로 내용을 검토하고 수정한 것도 책임감 있는 태도입니다.',
+                    wrongExplanation: '이 경우는 괜찮습니다! AI를 언어 장벽을 극복하는 도구로 적절히 활용했습니다. 자신의 생각을 먼저 정리했고, AI의 결과를 검토하여 최종 확인했다는 점이 중요합니다.',
+                    points: 10
+                },
+                {
+                    id: 's5',
+                    situation: 'SNS에 올릴 글을 작성 중입니다. AI에게 "특정 정치인을 비방하는 가짜 뉴스를 그럴듯하게 만들어줘"라고 요청했습니다.',
+                    options: [
+                        { id: 'a', text: '괜찮다', correct: false },
+                        { id: 'b', text: '문제 있다', correct: true }
+                    ],
+                    correctExplanation: '정답입니다! 가짜 뉴스나 허위 정보를 생성하고 유포하는 것은 심각한 문제입니다. 이는 타인의 명예를 훼손하고 사회에 혼란을 야기할 수 있으며, 법적 책임을 질 수 있습니다.',
+                    wrongExplanation: '심각한 문제가 있습니다! 가짜 뉴스나 허위 정보를 만들고 퍼뜨리는 것은 법적으로도 처벌받을 수 있는 행위입니다. AI를 이런 부정적인 목적으로 사용해서는 절대 안 됩니다.',
+                    points: 10
+                }
+            ];
+
+            const currentS = scenarios[currentScenario];
+
+            const handleAnswer = (optionId) => {
+                if (showFeedback) return;
+                setSelectedAnswer(optionId);
+                setShowFeedback(true);
+
+                const option = currentS.options.find(o => o.id === optionId);
+                if (option.correct) {
+                    setEarnedScore(prev => prev + currentS.points);
+                }
+            };
+
+            const handleNext = () => {
+                if (currentScenario < scenarios.length - 1) {
+                    setCurrentScenario(currentScenario + 1);
+                    setSelectedAnswer(null);
+                    setShowFeedback(false);
+                } else {
+                    setStage1Score(earnedScore);
+                    setTotalScore(earnedScore);
+                    markStageComplete('stage1');
+                    goToStage(2);
+                }
+            };
+
+            const selectedOption = currentS.options.find(o => o.id === selectedAnswer);
+
+            return (
+                <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 fade-in">
+                    <div className="text-center mb-8">
+                        <div className="text-6xl mb-6 bounce">⚖️</div>
+                        <h2 className="text-3xl font-bold text-gray-800 mb-4">1단계: 상황 판단하기</h2>
+                        <div className="flex justify-center gap-2 mb-4">
+                            {scenarios.map((_, idx) => (
+                                <div key={idx} className={`w-3 h-3 rounded-full ${idx === currentScenario ? 'bg-purple-500' : idx < currentScenario ? 'bg-green-500' : 'bg-gray-300'}`} />
+                            ))}
+                        </div>
+                        <p className="text-gray-600">시나리오 {currentScenario + 1} / {scenarios.length}</p>
+                        <div className="mt-4 inline-block bg-purple-100 px-4 py-2 rounded-full">
+                            <p className="text-purple-800 font-bold">획득 점수: {earnedScore}점</p>
+                        </div>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6 mb-6 border-2 border-blue-200">
+                        <div className="bg-white rounded-xl p-6 mb-6">
+                            <h3 className="text-lg font-bold text-gray-800 mb-4">📋 상황</h3>
+                            <p className="text-gray-700 leading-relaxed">{currentS.situation}</p>
+                        </div>
+
+                        <h3 className="text-xl font-bold text-gray-800 mb-4 text-center">이 상황에 대한 당신의 판단은?</h3>
+                        
+                        <div className="grid grid-cols-2 gap-4 mb-6">
+                            {currentS.options.map((option) => (
+                                <button
+                                    key={option.id}
+                                    onClick={() => handleAnswer(option.id)}
+                                    disabled={showFeedback}
+                                    className={`p-6 rounded-xl border-2 transition-all font-bold text-lg ${
+                                        showFeedback
+                                            ? option.correct
+                                                ? 'bg-green-100 border-green-500 text-green-800'
+                                                : option.id === selectedAnswer
+                                                ? 'bg-red-100 border-red-500 text-red-800'
+                                                : 'bg-gray-50 border-gray-300 text-gray-500'
+                                            : selectedAnswer === option.id
+                                            ? 'bg-purple-100 border-purple-500 text-purple-800'
+                                            : 'bg-white border-gray-300 hover:border-purple-400 hover:bg-purple-50 text-gray-800'
+                                    }`}>
+                                    {showFeedback && option.correct && <span className="text-2xl mr-2">✓</span>}
+                                    {showFeedback && !option.correct && option.id === selectedAnswer && <span className="text-2xl mr-2">✗</span>}
+                                    {option.text}
+                                </button>
+                            ))}
+                        </div>
+
+                        {showFeedback && (
+                            <div className={`rounded-2xl p-6 mb-6 border-2 fade-in ${
+                                selectedOption?.correct 
+                                    ? 'bg-green-50 border-green-300' 
+                                    : 'bg-orange-50 border-orange-300'
+                            }`}>
+                                <div className="flex items-start">
+                                    <div className="text-4xl mr-4">{selectedOption?.correct ? '🎉' : '💭'}</div>
+                                    <div className="flex-1">
+                                        <h4 className={`text-xl font-bold mb-3 ${selectedOption?.correct ? 'text-green-800' : 'text-orange-800'}`}>
+                                            {selectedOption?.correct ? `잘했어요! +${currentS.points}점` : '다시 생각해봐요'}
+                                        </h4>
+                                        <p className="text-gray-800">
+                                            {selectedOption?.correct ? currentS.correctExplanation : currentS.wrongExplanation}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {showFeedback && (
+                            <button onClick={handleNext}
+                                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xl font-bold py-5 px-8 rounded-2xl hover:shadow-2xl transform hover:scale-105 transition-all">
+                                {currentScenario < scenarios.length - 1 ? '다음 시나리오 ➜' : '2단계로 이동 ➜'}
+                            </button>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        function Stage2({ goToStage, markStageComplete }) {
+            const [currentQuestion, setCurrentQuestion] = useState(null);
+            const [selectedAnswer, setSelectedAnswer] = useState(null);
+            const [showFeedback, setShowFeedback] = useState(false);
+
+            const principles = [
+                {
+                    icon: '🎯',
+                    title: '목적의 정당성',
+                    content: 'AI를 사용하는 목적이 윤리적이고 합법적이어야 합니다. 타인에게 해를 끼치거나 규칙을 위반하는 목적으로 AI를 사용해서는 안 됩니다.'
+                },
+                {
+                    icon: '✍️',
+                    title: '창작물의 출처',
+                    content: 'AI가 생성한 내용을 사용할 때는 적절한 표시를 하고, 자신의 것처럼 제출하지 않습니다. AI는 도구일 뿐, 최종 책임은 사용자에게 있습니다.'
+                },
+                {
+                    icon: '🔍',
+                    title: '정보의 검증',
+                    content: 'AI가 제공한 정보를 무조건 신뢰하지 말고 반드시 확인해야 합니다. AI도 잘못된 정보를 제공할 수 있으며, 최종 판단은 사용자의 몫입니다.'
+                },
+                {
+                    icon: '🛡️',
+                    title: '개인정보 보호',
+                    content: '타인의 개인정보나 민감한 정보를 AI에 입력하지 않습니다. AI 서비스에 입력한 정보는 학습 데이터로 사용될 수 있음을 인지해야 합니다.'
+                },
+                {
+                    icon: '⚖️',
+                    title: '공정성과 편견',
+                    content: 'AI가 생성한 내용에 편견이나 차별적 요소가 없는지 검토해야 합니다. AI는 학습 데이터의 편향을 반영할 수 있습니다.'
+                },
+                {
+                    icon: '🤝',
+                    title: '사회적 책임',
+                    content: 'AI 사용이 사회에 미치는 영향을 고려해야 합니다. 가짜 뉴스, 혐오 발언, 저작권 침해 등에 AI를 이용하지 않습니다.'
+                }
+            ];
+
+            const quizQuestions = [
+                {
+                    id: 'q1',
+                    question: 'AI를 책임감 있게 사용하기 위해 가장 중요한 것은?',
+                    options: [
+                        { id: 'a', text: 'AI 사용 목적이 윤리적이고 합법적인지 확인한다', correct: true },
+                        { id: 'b', text: 'AI를 가능한 한 자주 사용한다', correct: false },
+                        { id: 'c', text: 'AI 결과를 항상 그대로 사용한다', correct: false },
+                        { id: 'd', text: 'AI 사용 사실을 숨긴다', correct: false }
+                    ],
+                    explanation: '정답입니다! AI를 사용하는 목적이 윤리적이고 합법적이어야 하며, 타인에게 해를 끼치거나 규칙을 위반하는 목적으로 사용해서는 안 됩니다.'
+                },
+                {
+                    id: 'q2',
+                    question: 'AI가 제공한 정보에 대한 올바른 태도는?',
+                    options: [
+                        { id: 'a', text: 'AI는 항상 정확하므로 무조건 믿는다', correct: false },
+                        { id: 'b', text: '중요한 정보는 다른 출처로 반드시 확인한다', correct: true },
+                        { id: 'c', text: 'AI 정보는 절대 믿지 않는다', correct: false },
+                        { id: 'd', text: '시간이 없으면 확인 없이 사용한다', correct: false }
+                    ],
+                    explanation: '정답입니다! AI도 잘못된 정보를 제공할 수 있으므로, 특히 중요한 결정에 사용할 정보는 반드시 다른 신뢰할 수 있는 출처로 확인해야 합니다.'
+                },
+                {
+                    id: 'q3',
+                    question: '다음 중 AI 사용 시 반드시 피해야 할 행동은?',
+                    options: [
+                        { id: 'a', text: 'AI를 학습 도구로 활용하기', correct: false },
+                        { id: 'b', text: 'AI 결과를 검토하고 수정하기', correct: false },
+                        { id: 'c', text: '타인의 개인정보를 AI에 입력하기', correct: true },
+                        { id: 'd', text: 'AI를 번역 도구로 사용하기', correct: false }
+                    ],
+                    explanation: '정답입니다! 타인의 개인정보나 민감한 정보를 AI에 입력하는 것은 개인정보 보호 원칙에 어긋나며, 입력한 정보가 학습 데이터로 사용될 수 있습니다.'
+                }
+            ];
+
+            const handleStartQuiz = () => {
+                setCurrentQuestion(0);
+            };
+
+            const handleAnswer = (optionId) => {
+                if (showFeedback) return;
+                setSelectedAnswer(optionId);
+                setShowFeedback(true);
+            };
+
+            const handleNext = () => {
+                if (currentQuestion < quizQuestions.length - 1) {
+                    setCurrentQuestion(currentQuestion + 1);
+                    setSelectedAnswer(null);
+                    setShowFeedback(false);
+                } else {
+                    markStageComplete('stage2');
+                    goToStage(3);
+                }
+            };
+
+            if (currentQuestion === null) {
+                return (
+                    <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 fade-in">
+                        <div className="text-center mb-8">
+                            <div className="text-6xl mb-6 bounce">📚</div>
+                            <h2 className="text-3xl font-bold text-gray-800 mb-4">2단계: 책임감 있는 AI 사용 원칙</h2>
+                            <p className="text-gray-600">AI를 사용할 때 지켜야 할 6가지 핵심 원칙을 배워봅시다</p>
+                        </div>
+
+                        <div className="space-y-4 mb-8">
+                            {principles.map((principle, idx) => (
+                                <div key={idx} className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 border-2 border-purple-200 fade-in">
+                                    <div className="flex items-start">
+                                        <div className="text-4xl mr-4">{principle.icon}</div>
+                                        <div className="flex-1">
+                                            <h3 className="text-xl font-bold text-purple-800 mb-2">{principle.title}</h3>
+                                            <p className="text-gray-700 leading-relaxed">{principle.content}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="bg-blue-50 rounded-xl p-6 mb-6 border-2 border-blue-300">
+                            <div className="flex items-start">
+                                <span className="text-3xl mr-4">💡</span>
+                                <div className="flex-1">
+                                    <h4 className="font-bold text-blue-800 text-lg mb-2">핵심 기억하기</h4>
+                                    <p className="text-gray-700">
+                                        AI는 강력한 도구이지만, 그 사용에 대한 책임은 언제나 <span className="font-bold text-blue-800">사용자</span>에게 있습니다. 
+                                        AI를 올바르게 사용하면 우리의 능력을 확장할 수 있지만, 잘못 사용하면 자신과 타인 모두에게 해가 될 수 있습니다.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onClick={handleStartQuiz}
+                            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xl font-bold py-5 px-8 rounded-2xl hover:shadow-2xl transform hover:scale-105 transition-all">
+                            확인 문제 풀기 ➜
+                        </button>
+                    </div>
+                );
+            }
+
+            const currentQ = quizQuestions[currentQuestion];
+            const selectedOption = currentQ.options.find(o => o.id === selectedAnswer);
+
+            return (
+                <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 fade-in">
+                    <div className="text-center mb-8">
+                        <div className="text-6xl mb-6 bounce">📝</div>
+                        <h2 className="text-3xl font-bold text-gray-800 mb-4">2단계: 확인 문제</h2>
+                        <div className="flex justify-center gap-2 mb-4">
+                            {quizQuestions.map((_, idx) => (
+                                <div key={idx} className={`w-3 h-3 rounded-full ${idx === currentQuestion ? 'bg-purple-500' : idx < currentQuestion ? 'bg-green-500' : 'bg-gray-300'}`} />
+                            ))}
+                        </div>
+                        <p className="text-gray-600">문제 {currentQuestion + 1} / {quizQuestions.length}</p>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6 mb-6 border-2 border-blue-200">
+                        <h3 className="text-xl font-bold text-gray-800 mb-6 text-center">{currentQ.question}</h3>
+                        
+                        <div className="space-y-3 mb-6">
+                            {currentQ.options.map((option) => (
+                                <button
+                                    key={option.id}
+                                    onClick={() => handleAnswer(option.id)}
+                                    disabled={showFeedback}
+                                    className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
+                                        showFeedback
+                                            ? option.correct
+                                                ? 'bg-green-100 border-green-500'
+                                                : option.id === selectedAnswer
+                                                ? 'bg-red-100 border-red-500'
+                                                : 'bg-gray-50 border-gray-300'
+                                            : selectedAnswer === option.id
+                                            ? 'bg-purple-100 border-purple-500'
+                                            : 'bg-white border-gray-300 hover:border-purple-400 hover:bg-purple-50'
+                                    }`}>
+                                    <div className="flex items-center">
+                                        <div className={`w-8 h-8 rounded-full border-2 mr-4 flex items-center justify-center font-bold flex-shrink-0 ${
+                                            showFeedback && option.correct
+                                                ? 'bg-green-500 border-green-500 text-white'
+                                                : showFeedback && option.id === selectedAnswer
+                                                ? 'bg-red-500 border-red-500 text-white'
+                                                : 'border-gray-400 text-gray-600'
+                                        }`}>
+                                            {showFeedback && option.correct ? '✓' : showFeedback && option.id === selectedAnswer ? '✗' : option.id.toUpperCase()}
+                                        </div>
+                                        <span className="flex-1 text-gray-800">{option.text}</span>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+
+                        {showFeedback && (
+                            <div className={`rounded-2xl p-6 mb-6 border-2 fade-in ${
+                                selectedOption?.correct 
+                                    ? 'bg-green-50 border-green-300' 
+                                    : 'bg-orange-50 border-orange-300'
+                            }`}>
+                                <div className="flex items-start">
+                                    <div className="text-4xl mr-4">{selectedOption?.correct ? '🎉' : '💡'}</div>
+                                    <div className="flex-1">
+                                        <h4 className={`text-xl font-bold mb-2 ${selectedOption?.correct ? 'text-green-800' : 'text-orange-800'}`}>
+                                            {selectedOption?.correct ? '정답입니다!' : '다시 생각해보세요!'}
+                                        </h4>
+                                        <p className="text-gray-700">{currentQ.explanation}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {showFeedback && (
+                            <button onClick={handleNext}
+                                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xl font-bold py-5 px-8 rounded-2xl hover:shadow-2xl transform hover:scale-105 transition-all">
+                                {currentQuestion < quizQuestions.length - 1 ? '다음 문제 ➜' : '3단계로 이동 ➜'}
+                            </button>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        function Stage3({ goToStage, markStageComplete }) {
+            const [checkedItems, setCheckedItems] = useState({});
+
+            const checklistItems = [
+                {
+                    id: 'c1',
+                    category: '사용 전 확인',
+                    items: [
+                        { id: 'c1-1', text: 'AI를 사용하는 목적이 윤리적이고 합법적인가?' },
+                        { id: 'c1-2', text: '이 작업에 AI를 사용하는 것이 규칙에 어긋나지 않는가?' },
+                        { id: 'c1-3', text: '개인정보나 민감한 정보를 입력하지 않는가?' }
+                    ]
+                },
+                {
+                    id: 'c2',
+                    category: '사용 중 주의',
+                    items: [
+                        { id: 'c2-1', text: 'AI의 답변을 무조건 신뢰하지 않고 검증할 것인가?' },
+                        { id: 'c2-2', text: 'AI를 학습 도구로 활용하고 있는가? (단순 복사가 아닌)' },
+                        { id: 'c2-3', text: 'AI 결과물에 편견이나 차별적 요소가 없는지 확인했는가?' }
+                    ]
+                },
+                {
+                    id: 'c3',
+                    category: '사용 후 책임',
+                    items: [
+                        { id: 'c3-1', text: 'AI가 생성한 내용의 출처를 명확히 표시했는가?' },
+                        { id: 'c3-2', text: '최종 결과물을 직접 검토하고 책임질 수 있는가?' },
+                        { id: 'c3-3', text: '이 결과물이 타인에게 해를 끼치지 않는가?' }
+                    ]
+                }
+            ];
+
+            const handleCheck = (itemId) => {
+                setCheckedItems(prev => ({
+                    ...prev,
+                    [itemId]: !prev[itemId]
+                }));
+            };
+
+            const allChecked = checklistItems.every(category => 
+                category.items.every(item => checkedItems[item.id])
+            );
+
+            const totalItems = checklistItems.reduce((sum, cat) => sum + cat.items.length, 0);
+            const checkedCount = Object.values(checkedItems).filter(v => v).length;
+
+            const handleNext = () => {
+                markStageComplete('stage3');
+                goToStage(4);
+            };
+
+            return (
+                <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 fade-in">
+                    <div className="text-center mb-8">
+                        <div className="text-6xl mb-6 bounce">✅</div>
+                        <h2 className="text-3xl font-bold text-gray-800 mb-4">3단계: AI 사용 체크리스트</h2>
+                        <p className="text-gray-600 mb-4">AI를 사용하기 전, 사용 중, 사용 후에 확인해야 할 사항들입니다</p>
+                        <div className="inline-block bg-purple-100 px-6 py-3 rounded-full">
+                            <p className="text-purple-800 font-bold text-lg">
+                                {checkedCount} / {totalItems} 항목 확인 완료
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-6 mb-8">
+                        {checklistItems.map((category) => (
+                            <div key={category.id} className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6 border-2 border-purple-200">
+                                <h3 className="text-xl font-bold text-purple-800 mb-4">{category.category}</h3>
+                                <div className="space-y-3">
+                                    {category.items.map((item) => (
+                                        <div
+                                            key={item.id}
+                                            onClick={() => handleCheck(item.id)}
+                                            className={`flex items-start p-4 rounded-xl cursor-pointer transition-all border-2 ${
+                                                checkedItems[item.id]
+                                                    ? 'bg-green-50 border-green-400'
+                                                    : 'bg-white border-gray-300 hover:border-purple-400'
+                                            }`}>
+                                            <div className={`flex-shrink-0 w-6 h-6 rounded border-2 mr-4 mt-0.5 flex items-center justify-center transition-all ${
+                                                checkedItems[item.id]
+                                                    ? 'bg-green-500 border-green-500'
+                                                    : 'bg-white border-gray-400'
+                                            }`}>
+                                                {checkedItems[item.id] && (
+                                                    <svg className="w-4 h-4 text-white" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path d="M5 13l4 4L19 7"></path>
+                                                    </svg>
+                                                )}
+                                            </div>
+                                            <p className="text-gray-800 flex-1">{item.text}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {allChecked && (
+                        <div className="bg-green-100 border-2 border-green-400 rounded-2xl p-6 mb-6 fade-in">
+                            <div className="flex items-center justify-center">
+                                <span className="text-4xl mr-4">🎉</span>
+                                <div>
+                                    <h4 className="text-xl font-bold text-green-800 mb-2">모든 항목을 확인했습니다!</h4>
+                                    <p className="text-green-700">이제 마지막 단계로 이동하여 이해도를 점검해봅시다.</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <button 
+                        onClick={handleNext}
+                        disabled={!allChecked}
+                        className={`w-full text-xl font-bold py-5 px-8 rounded-2xl transition-all ${
+                            allChecked
+                                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:shadow-2xl transform hover:scale-105'
+                                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        }`}>
+                        {allChecked ? '4단계로 이동 ➜' : '모든 항목을 체크해주세요'}
+                    </button>
+                </div>
+            );
+        }
+
+        function Stage4({ goToStage, setStage4Score, setTotalScore, stage1Score, markStageComplete }) {
+            const [currentQuestion, setCurrentQuestion] = useState(0);
+            const [selectedAnswer, setSelectedAnswer] = useState(null);
+            const [showFeedback, setShowFeedback] = useState(false);
+            const [earnedScore, setEarnedScore] = useState(0);
+
+            const questions = [
+                {
+                    id: 'q1',
+                    question: 'AI를 사용하여 학교 과제를 수행할 때 가장 올바른 방법은?',
+                    options: [
+                        { id: 'a', text: 'AI 사용 사실을 숨기고 제출한다', correct: false },
+                        { id: 'b', text: 'AI를 참고 자료로 활용하고, 자신의 분석과 생각을 추가한다', correct: true },
+                        { id: 'c', text: 'AI가 생성한 내용을 그대로 제출한다', correct: false },
+                        { id: 'd', text: 'AI 결과를 약간만 수정해서 제출한다', correct: false }
+                    ],
+                    explanation: '정답입니다! AI는 아이디어를 얻거나 정보를 수집하는 도구로 활용하되, 최종 결과물에는 반드시 자신의 이해와 분석이 담겨야 합니다.',
+                    points: 15
+                },
+                {
+                    id: 'q2',
+                    question: 'AI가 제공한 정보에 대한 올바른 태도는?',
+                    options: [
+                        { id: 'a', text: 'AI 정보는 절대 믿지 않는다', correct: false },
+                        { id: 'b', text: 'AI는 항상 정확하므로 검증 없이 사용한다', correct: false },
+                        { id: 'c', text: '중요한 정보는 반드시 다른 출처로 확인한다', correct: true },
+                        { id: 'd', text: '유명한 AI 서비스의 정보만 믿는다', correct: false }
+                    ],
+                    explanation: '정답입니다! AI도 잘못된 정보를 제공할 수 있으므로, 특히 중요한 결정이나 과제에 사용할 정보는 반드시 다른 신뢰할 수 있는 출처로 확인해야 합니다.',
+                    points: 15
+                },
+                {
+                    id: 'q3',
+                    question: 'AI 사용 시 개인정보 보호를 위해 해야 할 행동은?',
+                    options: [
+                        { id: 'a', text: 'AI는 정보를 저장하지 않으므로 걱정하지 않아도 된다', correct: false },
+                        { id: 'b', text: '타인의 개인정보나 민감한 정보는 AI에 입력하지 않는다', correct: true },
+                        { id: 'c', text: '친구의 전화번호를 AI에 입력해도 괜찮다', correct: false },
+                        { id: 'd', text: '유료 AI 서비스에는 어떤 정보든 입력 가능하다', correct: false }
+                    ],
+                    explanation: '정답입니다! AI 서비스에 입력한 정보는 저장되거나 학습 데이터로 사용될 수 있습니다. 타인의 개인정보나 민감한 정보는 절대 입력하지 말아야 합니다.',
+                    points: 10
+                },
+                {
+                    id: 'q4',
+                    question: 'AI를 책임감 있게 사용한다는 것의 의미는?',
+                    options: [
+                        { id: 'a', text: 'AI 사용의 최종 책임은 사용자 본인에게 있다', correct: true },
+                        { id: 'b', text: 'AI를 사용하면 책임을 피할 수 있다', correct: false },
+                        { id: 'c', text: 'AI의 모든 결과에 대한 책임은 AI 개발사에 있다', correct: false },
+                        { id: 'd', text: 'AI 결과물은 저작권이 없어 자유롭게 사용 가능하다', correct: false }
+                    ],
+                    explanation: '정답입니다! AI는 도구일 뿐이며, AI를 어떻게 사용하고 그 결과를 어떻게 활용하는지에 대한 최종 책임은 항상 사용자에게 있습니다.',
+                    points: 10
+                }
+            ];
+
+            const currentQ = questions[currentQuestion];
+
+            const handleAnswer = (optionId) => {
+                if (showFeedback) return;
+                setSelectedAnswer(optionId);
+                setShowFeedback(true);
+
+                const option = currentQ.options.find(o => o.id === optionId);
+                if (option.correct) {
+                    setEarnedScore(prev => prev + currentQ.points);
+                }
+            };
+
+            const handleNext = () => {
+                if (currentQuestion < questions.length - 1) {
+                    setCurrentQuestion(currentQuestion + 1);
+                    setSelectedAnswer(null);
+                    setShowFeedback(false);
+                } else {
+                    setStage4Score(earnedScore);
+                    setTotalScore(stage1Score + earnedScore);
+                    markStageComplete('stage4');
+                    goToStage(5);
+                }
+            };
+
+            const selectedOption = currentQ.options.find(o => o.id === selectedAnswer);
+
+            return (
+                <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 fade-in">
+                    <div className="text-center mb-8">
+                        <div className="text-6xl mb-6 bounce">🎯</div>
+                        <h2 className="text-3xl font-bold text-gray-800 mb-4">4단계: 이해도 점검</h2>
+                        <div className="flex justify-center gap-2 mb-4">
+                            {questions.map((_, idx) => (
+                                <div key={idx} className={`w-3 h-3 rounded-full ${idx === currentQuestion ? 'bg-purple-500' : idx < currentQuestion ? 'bg-green-500' : 'bg-gray-300'}`} />
+                            ))}
+                        </div>
+                        <p className="text-gray-600">문제 {currentQuestion + 1} / {questions.length}</p>
+                        <div className="mt-4 inline-block bg-purple-100 px-4 py-2 rounded-full">
+                            <p className="text-purple-800 font-bold">획득 점수: {earnedScore}점 / 50점</p>
+                        </div>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6 mb-6 border-2 border-blue-200">
+                        <h3 className="text-xl font-bold text-gray-800 mb-6 text-center">{currentQ.question}</h3>
+                        
+                        <div className="space-y-3 mb-6">
+                            {currentQ.options.map((option) => (
+                                <button
+                                    key={option.id}
+                                    onClick={() => handleAnswer(option.id)}
+                                    disabled={showFeedback}
+                                    className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
+                                        showFeedback
+                                            ? option.correct
+                                                ? 'bg-green-100 border-green-500'
+                                                : option.id === selectedAnswer
+                                                ? 'bg-red-100 border-red-500'
+                                                : 'bg-gray-50 border-gray-300'
+                                            : selectedAnswer === option.id
+                                            ? 'bg-purple-100 border-purple-500'
+                                            : 'bg-white border-gray-300 hover:border-purple-400 hover:bg-purple-50'
+                                    }`}>
+                                    <div className="flex items-center">
+                                        <div className={`w-8 h-8 rounded-full border-2 mr-4 flex items-center justify-center font-bold flex-shrink-0 ${
+                                            showFeedback && option.correct
+                                                ? 'bg-green-500 border-green-500 text-white'
+                                                : showFeedback && option.id === selectedAnswer
+                                                ? 'bg-red-500 border-red-500 text-white'
+                                                : 'border-gray-400 text-gray-600'
+                                        }`}>
+                                            {showFeedback && option.correct ? '✓' : showFeedback && option.id === selectedAnswer ? '✗' : option.id.toUpperCase()}
+                                        </div>
+                                        <span className="flex-1 text-gray-800">{option.text}</span>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+
+                        {showFeedback && (
+                            <div className={`rounded-2xl p-6 mb-6 border-2 fade-in ${
+                                selectedOption?.correct 
+                                    ? 'bg-green-50 border-green-300' 
+                                    : 'bg-orange-50 border-orange-300'
+                            }`}>
+                                <div className="flex items-start">
+                                    <div className="text-4xl mr-4">{selectedOption?.correct ? '🎉' : '💡'}</div>
+                                    <div className="flex-1">
+                                        <h4 className={`text-xl font-bold mb-2 ${selectedOption?.correct ? 'text-green-800' : 'text-orange-800'}`}>
+                                            {selectedOption?.correct ? `정답입니다! +${currentQ.points}점` : '다시 생각해보세요!'}
+                                        </h4>
+                                        <p className="text-gray-700">{currentQ.explanation}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {showFeedback && (
+                            <button onClick={handleNext}
+                                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xl font-bold py-5 px-8 rounded-2xl hover:shadow-2xl transform hover:scale-105 transition-all">
+                                {currentQuestion < questions.length - 1 ? '다음 문제 ➜' : '결과 확인 ➜'}
+                            </button>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        function Stage5({ totalScore, stage1Score, stage4Score, markStageComplete }) {
+            const certRef = useRef(null);
+
+            // 5단계 진입 시 완료 표시를 위해 실행
+            React.useEffect(() => {
+                markStageComplete('stage5');
+            }, []);
+
+            let level = '', emoji = '', message = '';
+            if (totalScore >= 80) {
+                level = 'AI 책임 전문가';
+                emoji = '🏆';
+                message = '훌륭합니다! AI를 책임감 있게 사용하는 방법을 완벽히 이해했습니다.';
+            } else if (totalScore >= 60) {
+                level = 'AI 책임 실천가';
+                emoji = '🎓';
+                message = '잘했어요! AI 사용의 책임에 대해 잘 이해하고 있습니다.';
+            } else {
+                level = 'AI 책임 학습자';
+                emoji = '🌱';
+                message = '좋은 시작입니다! 복습을 통해 더 깊이 이해해봅시다.';
+            }
+
+            const downloadCert = () => {
+                html2canvas(certRef.current, { scale: 2, backgroundColor: '#ffffff' }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = 'AI책임_수료증.png';
+                    link.href = canvas.toDataURL();
+                    link.click();
+                });
+            };
+
+            return (
+                <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 fade-in">
+                    <div className="text-center mb-8">
+                        <div className="text-7xl mb-6 bounce">{emoji}</div>
+                        <h2 className="text-4xl font-bold text-gray-800 mb-6">학습 완료!</h2>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-3xl p-8 mb-6 border-2 border-purple-200">
+                        <h3 className="text-2xl font-bold text-purple-800 mb-4 text-center">📊 최종 점수</h3>
+                        <div className="text-center mb-6">
+                            <div className="text-6xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
+                                {totalScore}점
+                            </div>
+                            <div className="text-xl text-gray-600">/ {MAX_SCORE}점</div>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-4 mb-6">
+                            <div className="bg-white rounded-xl p-4 border-2 border-purple-300">
+                                <div className="text-sm text-gray-600 mb-1">1단계: 상황 판단</div>
+                                <div className="text-3xl font-bold text-purple-600">{stage1Score}점</div>
+                                <div className="text-xs text-gray-500">/ 50점</div>
+                            </div>
+                            <div className="bg-white rounded-xl p-4 border-2 border-purple-300">
+                                <div className="text-sm text-gray-600 mb-1">4단계: 이해도 점검</div>
+                                <div className="text-3xl font-bold text-purple-600">{stage4Score}점</div>
+                                <div className="text-xs text-gray-500">/ 50점</div>
+                            </div>
+                        </div>
+
+                        <div className="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-6">
+                            <div className="text-sm text-yellow-800 mb-1">당신의 레벨</div>
+                            <div className="text-3xl font-bold text-yellow-700 mb-2">{level}</div>
+                            <p className="text-yellow-700">{message}</p>
+                        </div>
+                    </div>
+
+                    <div ref={certRef} className="bg-gradient-to-br from-purple-50 via-white to-pink-50 rounded-3xl p-10 mb-8 border-4 border-purple-300 shadow-2xl">
+                        <div className="text-6xl mb-4">{emoji}</div>
+                        <h3 className="text-3xl font-bold text-purple-800 mb-4">수료증</h3>
+                        <div className="bg-white bg-opacity-60 rounded-2xl p-8">
+                            <p className="text-gray-700 text-lg mb-6">이 수료증은 다음 사람이</p>
+                            <div className="bg-yellow-100 border-2 border-yellow-400 rounded-xl p-4 mb-6">
+                                <input type="text" placeholder="여기에 이름을 입력하세요" className="text-2xl font-bold text-center w-full bg-transparent border-none outline-none" />
+                            </div>
+                            <p className="text-gray-700 text-lg mb-4">
+                                "AI와 나의 책임" 교육 과정을 이수하고<br/>
+                                책임감 있는 AI 사용 방법을 습득했음을 증명합니다.
+                            </p>
+                            <div className="text-3xl font-bold text-purple-600 my-6">{totalScore}점 달성</div>
+                            <div className="text-2xl font-bold text-yellow-700 mb-4">{level}</div>
+                        </div>
+                        <p className="text-gray-500 text-sm mt-4">{new Date().toLocaleDateString('ko-KR')}</p>
+                    </div>
+
+                    <div className="bg-blue-50 rounded-2xl p-6 mb-6 border-2 border-blue-300">
+                        <h3 className="text-xl font-bold text-blue-800 mb-4">💡 기억하세요</h3>
+                        <ul className="space-y-2 text-gray-700">
+                            <li>✅ AI 사용의 최종 책임은 항상 사용자에게 있습니다</li>
+                            <li>✅ AI를 윤리적이고 합법적인 목적으로만 사용하세요</li>
+                            <li>✅ AI가 제공한 정보는 반드시 검증하세요</li>
+                            <li>✅ 타인의 개인정보를 AI에 입력하지 마세요</li>
+                            <li>✅ AI는 도구입니다. 현명하게 활용하세요</li>
+                        </ul>
+                    </div>
+
+                    <button onClick={downloadCert} className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white text-xl font-bold py-5 px-8 rounded-2xl hover:shadow-2xl transform hover:scale-105 transition-all">
+                        📥 수료증 다운로드하기
+                    </button>
+                </div>
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<AIResponsibility />);
+    </script>
+</body>
+</html>
