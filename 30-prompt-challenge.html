@@ -19,7 +19,6 @@
         .pulse { animation: pulse 2s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         
-        /* 채팅 스타일 추가 */
         .chat-container { background: #f3f4f6; border-radius: 1.5rem; overflow: hidden; border: 1px solid #e5e7eb; }
         .chat-bubble-ai { background: white; border-radius: 0 1rem 1rem 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .chat-bubble-user { background: #6366f1; color: white; border-radius: 1rem 1rem 0 1rem; }
@@ -31,7 +30,6 @@
         const { useState, useRef, useEffect } = React;
         const MAX_SCORE = 100;
 
-        // 채팅 메시지 컴포넌트
         function ChatMessage({ role, text, icon }) {
             return (
                 <div className={`flex ${role === 'user' ? 'justify-end' : 'justify-start'} mb-4 fade-in`}>
@@ -184,7 +182,6 @@
             );
         }
 
-        /* 1단계: 채팅 UI로 변경 */
         function Stage1({ goToStage, markStageComplete }) {
             const [currentChallenge, setCurrentChallenge] = useState(0);
             const [chatHistory, setChatHistory] = useState([]);
@@ -322,7 +319,6 @@
             );
         }
 
-        /* 2단계: 채팅 후 문제발견 UI */
         function Stage2({ goToStage, updateScore, markStageComplete }) {
             const [currentChallenge, setCurrentChallenge] = useState(0);
             const [isChatted, setIsChatted] = useState(false);
@@ -466,17 +462,18 @@
             );
         }
 
-        /* 3단계: 채팅 수정 UI */
+        /* 3단계: 수정된 프롬프트 수정하기 로직 */
         function Stage3({ goToStage, markStageComplete }) {
             const [currentChallenge, setCurrentChallenge] = useState(0);
             const [chatHistory, setChatHistory] = useState([]);
-            const [showImproved, setShowImproved] = useState(false);
+            const [stepInChallenge, setStepInChallenge] = useState(0); // 0: 시작, 1: 기본결과완료, 2: 개선결과완료
 
             const challenges = [
                 {
                     id: 'c1',
                     topic: '인스타그램 캡션',
                     basicPrompt: '인스타 글 써줘',
+                    basicResult: '즐거운 하루입니다. #일상 #소통 #좋아요',
                     improvedPrompt: '카페 창업 3주년을 축하하는 인스타그램 캡션을 써줘. 감사 인사와 함께 이번 주 특별 이벤트(아메리카노 1+1)를 자연스럽게 홍보하고, 해시태그 5개 포함해줘. 친근하고 따뜻한 톤으로',
                     improvedResult: '우리 카페가 벌써 3주년을 맞이했어요! 🎉\n\n항상 찾아주시는 모든 분들 덕분에 여기까지 올 수 있었어요. 진심으로 감사드립니다 ☕️💕\n\n감사의 마음을 담아 이번 주 내내 아메리카노 1+1 이벤트를 진행해요! 소중한 분과 함께 맛있는 커피 한 잔 어떠세요?\n\n앞으로도 더 좋은 커피와 따뜻한 공간으로 찾아뵐게요 🌟\n\n#카페3주년 #감사이벤트 #아메리카노1+1 #동네카페 #커피스타그램',
                     suggestions: ['목적 명시 (3주년 축하)', '구체적 이벤트 (아메리카노 1+1)', '톤 지정 (친근하고 따뜻하게)', '형식 요청 (해시태그 5개)']
@@ -485,32 +482,42 @@
                     id: 'c2',
                     topic: '간편 요리 레시피',
                     basicPrompt: '요리 레시피 알려줘',
+                    basicResult: '1. 재료를 준비한다. 2. 냄비에 넣고 끓인다. 3. 간을 맞춘다.',
                     improvedPrompt: '혼자 사는 직장인을 위한 10분 완성 김치볶음밥 레시피를 알려줘. 1인분 기준으로 재료와 분량을 명시하고, 요리 초보도 따라할 수 있게 각 단계마다 팁을 추가해줘',
-                    improvedResult: '⏰ 10분 완성! 직장인 김치볶음밥\n\n📋 재료 (1인분)\n• 밥 1공기 (차가운 밥이 더 좋아요)\n• 김치 100g (송송 썰기)\n• 식용유 1큰술\n• 김치국물 2큰술\n• 간장 1작은술\n• 참기름 1작은술\n• 달걀 1개 (선택)\n• 김가루 약간\n\n👨‍🍳 조리법\n1. 달군 팬에 식용유 두르기\n   💡 TIP: 센 불로 예열하면 볶음밥이 눌러붙지 않아요\n\n2. 썬 김치 볶기 (2분)\n   💡 TIP: 김치가 살짝 투명해질 때까지!\n\n3. 밥 넣고 주걱으로 부수며 볶기 (3분)\n   💡 TIP: 밥을 먼저 손으로 살살 풀어두면 더 쉬워요\n\n4. 김치국물, 간장 넣고 섞기 (1분)\n   💡 TIP: 김치가 싱거우면 간장을 조금 더!\n\n5. 참기름 넣고 마무리\n\n6. 프라이팬 한쪽에 달걀 프라이 (선택)\n\n7. 접시에 담고 김가루 뿌리기\n\n🎉 완성! 든든한 한 끼 완성이에요',
+                    improvedResult: '⏰ 10분 완성! 직장인 김치볶음밥\n\n📋 재료 (1인분)\n• 밥 1공기 (차가운 밥이 더 좋아요)\n• 김치 100g (송송 썰기)\n• 식용유 1큰술\n• 간장 1작은술\n• 참기름 1작은술\n\n👨‍🍳 조리법\n1. 달군 팬에 식용유 두르기\n   💡 TIP: 센 불로 예열하면 볶음밥이 눌러붙지 않아요\n2. 썬 김치 볶기 (2분)\n   💡 TIP: 김치가 살짝 투명해질 때까지!\n3. 밥 넣고 볶은 뒤 참기름으로 마무리!\n\n🎉 든든한 한 끼 완성이에요!',
                     suggestions: ['타겟 명시 (혼자 사는 직장인)', '시간 제한 (10분)', '요리명 구체화 (김치볶음밥)', '배려 요청 (초보용 팁)']
                 },
                 {
                     id: 'c3',
                     topic: '어린이 교육 자료',
-                    basicPrompt: '교육 자료 만들어줘',
-                    improvedPrompt: '초등학교 3학년 학생들이 태양계를 쉽게 이해할 수 있는 학습 자료를 만들어줘. 각 행성의 특징을 이모지와 함께 간단하게 설명하고, 크기 비교와 기억하기 쉬운 순서 암기법도 포함해줘',
-                    improvedResult: '🌟 태양계 여행을 떠나볼까요?\n\n🌞 태양\n우리 태양계의 중심! 엄청 뜨거운 불덩어리예요.\n\n🪐 8개 행성 순서 외우기\n"수금지화목토천해"\n수(수성) 금(금성) 지(지구) 화(화성) 목(목성) 토(토성) 천(천왕성) 해(해왕성)\n\n【행성 소개】\n\n☿️ 1. 수성\n• 태양에 가장 가까워요\n• 가장 작고 빨라요\n• 낮에는 엄청 덥고 밤에는 엄청 추워요\n\n♀️ 2. 금성\n• 제일 밝게 빛나요 (저녁의 별)\n• 두꺼운 구름으로 덮여있어요\n• 가장 뜨거운 행성이에요\n\n🌍 3. 지구\n• 우리가 사는 행성!\n• 물이 있는 유일한 행성\n• 푸른 색이 아름다워요\n\n🔴 4. 화성\n• 빨간 행성\n• 흙이 빨개서 화성이래요\n• 미래에 사람이 살 수도 있대요\n\n🟤 5. 목성\n• 제일 큰 행성!\n• 지구보다 1,300배나 커요\n• 거대한 빨간 점이 특징\n\n💍 6. 토성\n• 아름다운 고리가 있어요\n• 얼음과 돌로 만들어진 고리\n• 두 번째로 큰 행성\n\n💙 7. 천왕성\n• 옆으로 누워서 돌아요\n• 청록색이에요\n• 엄청 추워요\n\n💙 8. 해왕성\n• 태양에서 가장 멀어요\n• 짙은 파란색\n• 가장 센 바람이 불어요\n\n📏 크기 비교\n목성 > 토성 > 천왕성 > 해왕성 > 지구 > 금성 > 화성 > 수성\n\n✨ 목성은 지구를 1,300개나 넣을 수 있을 만큼 거대해요!',
-                    suggestions: ['대상 연령 (초3)', '주제 명시 (태양계)', '형식 요청 (이모지 활용)', '추가 요소 (크기 비교, 암기법)']
+                    basicPrompt: '태양계 알려줘',
+                    basicResult: '태양계에는 수성, 금성, 지구, 화성, 목성, 토성, 천왕성, 해왕성이 있습니다.',
+                    improvedPrompt: '초등학교 3학년 학생들이 태양계를 쉽게 이해할 수 있는 학습 자료를 만들어줘. 각 행성의 특징을 이모지와 함께 간단하게 설명하고, 기억하기 쉬운 순서 암기법도 포함해줘',
+                    improvedResult: '🌟 태양계 여행을 떠나볼까요?\n\n🌞 태양: 우리 태양계의 중심!\n🌍 지구: 우리가 사는 푸른 행성\n🪐 토성: 아름다운 고리가 있어요\n\n💡 암기 꿀팁!\n"수금지화목토천해" 앞글자만 따서 노래처럼 외워봐요!\n아이들 눈높이에 맞춘 행성별 이모지 설명이 포함되었습니다.',
+                    suggestions: ['대상 연령 (초3)', '주제 명시 (태양계)', '형식 요청 (이모지 활용)', '추가 요소 (암기법)']
                 }
             ];
 
             const currentC = challenges[currentChallenge];
 
             useEffect(() => {
-                setChatHistory([{ role: 'ai', text: `안녕하세요! 어떤 내용을 도와드릴까요?` }]);
-                setShowImproved(false);
+                setChatHistory([{ role: 'ai', text: `안녕하세요! "${currentC.topic}" 작성을 도와드릴까요?` }]);
+                setStepInChallenge(0);
             }, [currentChallenge]);
+
+            const handleSendBasic = () => {
+                setChatHistory(prev => [...prev, { role: 'user', text: currentC.basicPrompt }]);
+                setTimeout(() => {
+                    setChatHistory(prev => [...prev, { role: 'ai', text: currentC.basicResult + "\n\n(⚠️ 너무 단순한 결과가 나왔습니다. 프롬프트를 수정해볼까요?)" }]);
+                    setStepInChallenge(1);
+                }, 600);
+            };
 
             const handleSendImproved = () => {
                 setChatHistory(prev => [...prev, { role: 'user', text: currentC.improvedPrompt }]);
                 setTimeout(() => {
                     setChatHistory(prev => [...prev, { role: 'ai', text: currentC.improvedResult }]);
-                    setShowImproved(true);
+                    setStepInChallenge(2);
                 }, 800);
             };
 
@@ -528,49 +535,67 @@
                     <div className="text-center mb-8">
                         <div className="text-6xl mb-6 bounce">✏️</div>
                         <h2 className="text-3xl font-bold text-gray-800 mb-2">3단계: 프롬프트 수정하기</h2>
-                        <p className="text-purple-600 font-bold italic">"구체적이고 명확한 지시의 힘을 확인해보세요!"</p>
+                        <p className="text-purple-600 font-bold italic">"아쉬운 결과를 직접 개선해보며 변화를 확인하세요!"</p>
                     </div>
 
                     <div className="grid md:grid-cols-3 gap-6 mb-8">
                         <div className="md:col-span-1 space-y-4">
-                            <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-5">
-                                <h4 className="font-bold text-red-800 mb-2">❌ 기존 프롬프트</h4>
-                                <p className="text-gray-700 bg-white p-3 rounded-lg text-sm">"{currentC.basicPrompt}"</p>
+                            <div className={`rounded-2xl p-5 border-2 transition-all ${stepInChallenge === 0 ? 'bg-blue-50 border-blue-300' : 'bg-gray-50 border-gray-200 opacity-60'}`}>
+                                <h4 className="font-bold text-blue-800 mb-2">1. 기본 요청</h4>
+                                <p className="text-gray-700 text-sm">먼저 기본 프롬프트를 보내 어떤 결과가 나오는지 확인해보세요.</p>
                             </div>
-                            <div className="bg-green-50 border-2 border-green-200 rounded-2xl p-5">
-                                <h4 className="font-bold text-green-800 mb-2">✅ 개선 포인트</h4>
+                            
+                            <div className={`rounded-2xl p-5 border-2 transition-all ${stepInChallenge === 1 ? 'bg-green-50 border-green-300 scale-105' : 'bg-gray-50 border-gray-200 opacity-60'}`}>
+                                <h4 className="font-bold text-green-800 mb-2">2. 개선 포인트 적용</h4>
                                 <ul className="text-xs space-y-1 text-green-700">
                                     {currentC.suggestions.map((s, i) => <li key={i}>• {s}</li>)}
                                 </ul>
                             </div>
+
+                            {stepInChallenge === 2 && (
+                                <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-5 fade-in">
+                                    <h4 className="font-bold text-amber-800 mb-1">✨ 결과 만족!</h4>
+                                    <p className="text-xs text-amber-700">구체적인 지시가 훨씬 나은 결과를 만들었습니다.</p>
+                                </div>
+                            )}
                         </div>
 
-                        <div className="md:col-span-2 chat-container p-6 flex flex-col h-[450px]">
+                        <div className="md:col-span-2 chat-container p-6 flex flex-col h-[500px]">
                             <div className="flex-1 overflow-y-auto mb-4">
                                 {chatHistory.map((chat, idx) => <ChatMessage key={idx} role={chat.role} text={chat.text} />)}
                             </div>
-                            {!showImproved && (
-                                <button onClick={handleSendImproved} className="bg-green-600 text-white py-4 rounded-xl font-bold hover:bg-green-700 transition-all shadow-lg">
-                                    🚀 개선된 프롬프트 전송하기
-                                </button>
-                            )}
+                            
+                            <div className="space-y-2">
+                                {stepInChallenge === 0 && (
+                                    <button onClick={handleSendBasic} className="w-full bg-gray-600 text-white py-4 rounded-xl font-bold hover:bg-gray-700 transition-all shadow-md">
+                                        💬 기본 프롬프트 전송하기
+                                    </button>
+                                )}
+                                {stepInChallenge === 1 && (
+                                    <button onClick={handleSendImproved} className="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg animate-pulse">
+                                        🚀 개선된 프롬프트 전송하기
+                                    </button>
+                                )}
+                                {stepInChallenge === 2 && (
+                                    <button onClick={handleNext} className="w-full bg-purple-600 text-white py-4 rounded-xl font-bold hover:bg-purple-700 transition-all shadow-md">
+                                        {currentChallenge < challenges.length - 1 ? '다음 챌린지 ➜' : '4단계로 이동 ➜'}
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
 
-                    {showImproved && (
-                        <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-6 fade-in">
-                            <h4 className="font-bold text-blue-800 mb-2">✨ 차이를 만든 요소</h4>
-                            <p className="text-gray-700 text-sm">구체적인 조건과 명확한 요구사항을 추가하니 AI가 훨씬 더 상세하고 유용한 답변을 제공했어요! 이것이 바로 <b>프롬프트 엔지니어링</b>의 힘입니다.</p>
-                            <button onClick={handleNext} className="w-full mt-6 bg-purple-600 text-white py-5 rounded-2xl font-bold text-xl">
-                                {currentChallenge < challenges.length - 1 ? '다음 챌린지 ➜' : '4단계로 이동 ➜'}
-                            </button>
+                    {stepInChallenge === 2 && (
+                        <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-6 fade-in text-center">
+                            <p className="text-gray-700 text-sm">
+                                단순히 "써줘"라고 하기보다 <b>대상, 목적, 톤, 형식</b>을 지정하는 것만으로도 품질이 달라집니다.
+                            </p>
                         </div>
                     )}
                 </div>
             );
         }
 
-        /* 4~5단계 및 기타 컴포넌트 (이전 코드 유지) */
         function Stage4({ goToStage, updateScore, markStageComplete }) {
             const [currentQuestion, setCurrentQuestion] = useState(0);
             const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -597,7 +622,7 @@
                         { id: 'a', text: 'Python 코드를 리뷰해줘. 좋은 점과 개선점을 나눠서 설명하고, 개선 부분은 Before/After 코드로 보여줘', correct: true },
                         { id: 'b', text: 'Python 코드를 전문적으로 리뷰해줘. 좋은 점, 개선점, 심각도 분석, 리팩토링 우선순위, 보안 취약점 검토, 성능 프로파일링, 테스트 커버리지 분석을 포함하고 각 항목마다 Before/After 코드와 성능 비교 수치를 제공해줘', correct: false }
                     ],
-                    explanation: '정답입니다! 실제 답변은 좋은 점, 개선점, Before/After 코드라는 "핵심 내용"만 간결하게 담고 있어요. A는 필요한 것만 요청해서 명확한 리뷰를 받았지만, B는 너무 많은 것을 요청해서 오히려 복잡해질 수 있어요. 때로는 간결한 프롬프트가 더 좋은 결과를 만듭니다!',
+                    explanation: '정답입니다! 실제 답변은 좋은 점, 개선점, Before/After 코드라는 "핵심 내용"만 간결하게 담고 있어요. A는 필요한 것만 요청해서 명확한 리뷰를 받았지만, B는 너무 많은 것을 요청해서 오히려 복잡해질 수 있어요.',
                     points: 20
                 },
                 {
@@ -608,7 +633,7 @@
                         { id: 'a', text: '반려동물 AI 앱 투자 피칭 자료를 만들어줘. 문제, 솔루션, 시장 분석, 차별점을 포함해줘', correct: false },
                         { id: 'b', text: '반려동물 AI 앱 투자 피칭 자료를 만들어줘. 문제, 솔루션, 시장 분석과 함께 구체적인 수익 모델과 목표 수치를 포함해줘', correct: true }
                     ],
-                    explanation: '정답입니다! 실제 답변에는 【수익 모델】(구독 9,900원, 수수료 3,000원)과 【목표】(1년차 10만명, 3년차 100만명) 섹션이 구체적 숫자와 함께 있어요. A는 추상적 내용만 요청했지만, B는 "구체적 수익 모델과 목표 수치"를 요청했기 때문에 투자자를 설득할 수 있는 자료가 나왔습니다.',
+                    explanation: '정답입니다! 실제 답변에는 【수익 모델】과 【목표】 섹션이 구체적 숫자와 함께 있어요. A는 추상적 내용만 요청했지만, B는 "구체적 수익 모델과 목표 수치"를 요청했기 때문에 투자자를 설득할 수 있는 자료가 나왔습니다.',
                     points: 20
                 }
             ];
@@ -679,7 +704,7 @@
             const certRef = useRef(null);
             const [checkedItems, setCheckedItems] = useState({});
             const keyLearnings = [
-                { id: 'l1', title: '명확성 (Clarity)', desc: '프롬프트는 명확하고 구체적이어야 합니다. 모호한 표현은 모호한 결과를 만듭니다.' },
+                { id: 'l1', title: '명확성 (Clarity)', desc: '프롬프트는 명확하고 구체적이어야 합니다.' },
                 { id: 'l2', title: '구체성 (Specificity)', desc: '대상, 분량, 형식, 톤 등 구체적인 조건을 명시하면 더 맞춤화된 답변을 얻을 수 있습니다.' },
                 { id: 'l3', title: '단계적 지시 (Step-by-step)', desc: '복잡한 작업은 단계별로 나누어 지시하면 AI가 더 체계적으로 응답합니다.' },
                 { id: 'l4', title: '예시 제공 (Examples)', desc: '원하는 형식이나 스타일의 예시를 제공하면 AI가 더 정확하게 이해합니다.' },
