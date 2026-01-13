@@ -20,6 +20,8 @@
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
         .slide-in { animation: slideIn 0.5s ease-out; }
         @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+        .typing-cursor { border-right: 2px solid #667eea; animation: blink 0.7s infinite; }
+        @keyframes blink { 50% { border-color: transparent; } }
     </style>
 </head>
 <body>
@@ -170,7 +172,6 @@
 
         function Stage1({ goToStage, markStageComplete }) {
             const [currentQuestion, setCurrentQuestion] = useState(0);
-            const [showContent, setShowContent] = useState(true);
 
             const contents = [
                 {
@@ -275,145 +276,155 @@
 
         function Stage2({ goToStage, markStageComplete }) {
             const [currentComparison, setCurrentComparison] = useState(0);
-            const [selectedPrompt, setSelectedPrompt] = useState(null);
-            const [showResult, setShowResult] = useState(false);
+            const [isTyping, setIsTyping] = useState(false);
+            const [displayedResult, setDisplayedResult] = useState({ p1: "", p2: "" });
+            const [selectedSide, setSelectedSide] = useState(null);
 
             const comparisons = [
                 {
                     id: 'c1',
-                    topic: '고양이 설명하기',
+                    topic: '역사적 인물 설명',
                     prompts: [
-                        {
-                            id: 'cute',
-                            text: '고양이를 귀엽게 설명해줘',
-                            style: '감성적',
-                            result: '고양이는 보들보들한 털을 가진 사랑스러운 친구예요! 🐱 동그란 눈망울로 우리를 바라보며 야옹~ 하고 울어요. 작은 발바닥으로 총총 걸어다니는 모습이 정말 귀여워요. 우리가 쓰다듬어주면 가르릉 소리를 내며 좋아한답니다!'
-                        },
-                        {
-                            id: 'scientific',
-                            text: '고양이를 과학적으로 설명해줘',
-                            style: '과학적',
-                            result: '고양이(Felis catus)는 포유류 고양이과에 속하는 육식동물입니다. 평균 체중은 4-5kg이며, 척추동물로서 뛰어난 야간 시력을 가지고 있습니다. 청각 범위는 48Hz~85kHz로 인간보다 넓으며, 발톱을 자유롭게 수축할 수 있는 신축성 발톱을 가지고 있습니다.'
-                        }
+                        { text: '이순신 장군에 대해 알려줘', style: '일반적', result: '이순신(1545~1598)은 조선 시대의 명장입니다. 임진왜란 당시 거북선을 활용하여 옥포, 한산도, 명량 해전 등에서 일본군을 물리치고 나라를 구한 민족의 영웅입니다.' },
+                        { text: '초등학생이 이해하기 쉽게 이순신 장군의 활약을 동화처럼 들려줘', style: '눈높이 맞춤', result: '옛날 옛적, 바다를 지키는 아주 용감한 대장님이 계셨어요! 바로 이순신 장군님이죠. 장군님은 거북이 모양의 튼튼한 배를 만들어 나쁜 적들을 물리쳤답니다. "나를 믿고 따르라!" 하시며 끝까지 나라를 지키셨어요.' }
                     ],
-                    explanation: 'AI는 "귀엽게"라는 단서에서 감성적 표현을, "과학적으로"라는 단서에서 객관적 정보를 제공했어요!'
+                    explanation: '대상(초등학생)과 형식(동화)을 지정하자 말투와 단어 선택이 완전히 바뀌었어요!'
                 },
                 {
                     id: 'c2',
-                    topic: '여행 계획 세우기',
+                    topic: '건강한 식단 추천',
                     prompts: [
-                        {
-                            id: 'simple',
-                            text: '제주도 여행 계획 세워줘',
-                            style: '간단한',
-                            result: '제주도 여행 계획:\n\n1일차: 공항 도착 → 호텔 체크인 → 해변 산책\n2일차: 한라산 등반 → 성산일출봉\n3일차: 카페 투어 → 귀가\n\n추천 음식: 흑돼지, 해산물'
-                        },
-                        {
-                            id: 'detailed',
-                            text: '제주도 2박3일 여행 계획을 세워줘. 맛집과 포토존 위주로 추천해줘',
-                            style: '구체적',
-                            result: '📸 제주도 2박3일 맛집&포토존 여행 계획\n\n🗓 1일차\n• 09:00 - 제주공항 도착\n• 10:30 - 애월 카페거리 (포토존: 바다뷰 카페)\n• 12:00 - 고기국수 맛집 "올레국수"\n• 14:00 - 협재해수욕장 (에메랄드빛 바다)\n• 18:00 - 흑돼지 맛집 "돈사돈"\n\n🗓 2일차\n• 08:00 - 성산일출봉 일출 (인생샷 명소)\n• 10:00 - 해녀의 집 해산물\n• 13:00 - 섭지코지 (드라마 촬영지)\n• 16:00 - 월정리 카페거리\n• 19:00 - 제주 시내 흑돼지 거리\n\n🗓 3일차\n• 09:00 - 우도 당일치기\n• 12:00 - 우도 땅콩아이스크림\n• 15:00 - 공항 출발\n\n💡 TIP: 렌터카 필수, 일몰 시간 확인!'
-                        }
+                        { text: '건강한 아침 메뉴 추천해줘', style: '단순 요청', result: '1. 오트밀과 과일\n2. 닭가슴살 샐러드\n3. 통곡물 빵과 계란\n4. 요거트와 견과류' },
+                        { text: '다이어트 중인 직장인을 위해 5분 안에 준비할 수 있는 고단백 아침 식단 3가지를 알려줘', style: '제약조건 추가', result: '⏰ 바쁜 직장인을 위한 초간단 고단백 아침:\n1. 쉐이크: 단백질 파우더 + 바나나 1개 (2분)\n2. 컵계란찜: 전자레인지 3분 완성 (4분)\n3. 그릭요거트: 미리 소분한 견과류 투하 (1분)\n준비 시간이 짧아 아침 시간을 아낄 수 있어요!' }
                     ],
-                    explanation: '구체적인 조건(2박3일, 맛집, 포토존)을 명시하자 AI가 더 상세하고 맞춤화된 답변을 제공했어요!'
+                    explanation: '제한 시간(5분)과 목적(다이어트), 대상(직장인)을 명시하니 훨씬 실용적인 답변이 나왔죠?'
+                },
+                {
+                    id: 'c3',
+                    topic: '코딩 도움받기',
+                    prompts: [
+                        { text: '파이썬으로 게임 만들어줘', style: '모호함', result: '게임의 종류가 다양하여 구체적인 코드를 작성하기 어렵습니다. 틱택토, 가위바위보, 숫자 맞추기 중 어떤 게임을 원하시나요?' },
+                        { text: 'Python으로 간단한 "숫자 맞추기 게임" 코드를 작성해줘. 숫자는 1-100 사이로 하고, 시도 횟수를 출력해줘.', style: '구체적 지시', result: 'import random\nanswer = random.randint(1, 100)\ncount = 0\nprint("숫자 게임 시작!")\n# ... 중략 ...\nprint(f"{count}번 만에 맞추셨습니다!")' }
+                    ],
+                    explanation: 'AI가 구체적으로 무엇을 해야 할지(숫자 맞추기, 범위, 기능) 정해주니 바로 코드를 생성할 수 있었어요.'
+                },
+                {
+                    id: 'c4',
+                    topic: '상황별 이메일 작성',
+                    prompts: [
+                        { text: '선생님께 이메일 써줘', style: '무례할 수 있음', result: '안녕하세요 선생님, 드릴 말씀이 있어서 메일 드립니다. 시간 되실 때 확인 부탁드려요.' },
+                        { text: '감기 때문에 결석하게 된 상황을 담아 담임 선생님께 정중한 결석 사유 이메일을 작성해줘. 오늘 날짜를 포함해줘.', style: '비즈니스 매너', result: '제목: [결석계] 1월 13일 OOO 학생 사유서\n\n존경하는 선생님께,\n안녕하세요, OOO입니다. 다름이 아니오라 갑작스러운 독감 증세로 인해 부득이하게 오늘(13일) 수업에 참석하지 못하게 되었습니다. 빠른 시일 내에 회복하여 등교하겠습니다.' }
+                    ],
+                    explanation: '상황(감기)과 태도(정중함)를 설정하자 상황에 딱 맞는 이메일 초안이 완성되었습니다.'
                 }
             ];
 
             const currentComp = comparisons[currentComparison];
 
-            const handlePromptClick = (promptId) => {
-                if (showResult) return;
-                setSelectedPrompt(promptId);
-            };
+            const simulateTyping = (side) => {
+                if (isTyping) return;
+                setIsTyping(true);
+                setSelectedSide(side);
+                
+                const fullText = currentComp.prompts[side === 'p1' ? 0 : 1].result;
+                let i = 0;
+                setDisplayedResult(prev => ({ ...prev, [side]: "" }));
 
-            const handleCompare = () => {
-                if (!selectedPrompt) return;
-                setShowResult(true);
+                const interval = setInterval(() => {
+                    setDisplayedResult(prev => ({
+                        ...prev,
+                        [side]: fullText.substring(0, i + 1)
+                    }));
+                    i++;
+                    if (i >= fullText.length) {
+                        clearInterval(interval);
+                        setIsTyping(false);
+                    }
+                }, 15);
             };
 
             const handleNext = () => {
-                if (currentComparison < comparisons.length - 1) {
-                    setCurrentComparison(currentComparison + 1);
-                    setSelectedPrompt(null);
-                    setShowResult(false);
-                } else {
+                setCurrentComparison(prev => prev + 1);
+                setDisplayedResult({ p1: "", p2: "" });
+                setSelectedSide(null);
+                if (currentComparison >= comparisons.length - 1) {
                     markStageComplete('stage2');
                     goToStage(3);
                 }
             };
 
+            const allResultsShown = displayedResult.p1 && displayedResult.p2 && !isTyping;
+
             return (
                 <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 fade-in">
                     <div className="text-center mb-8">
                         <div className="text-6xl mb-6 bounce">🔄</div>
-                        <h2 className="text-3xl font-bold text-gray-800 mb-4">2단계: 서로 다른 프롬프트 비교하기</h2>
+                        <h2 className="text-3xl font-bold text-gray-800 mb-4">2단계: AI에게 직접 질문 전송하기</h2>
                         <div className="flex justify-center gap-2 mb-4">
                             {comparisons.map((_, idx) => (
                                 <div key={idx} className={`w-3 h-3 rounded-full ${idx === currentComparison ? 'bg-purple-500' : idx < currentComparison ? 'bg-green-500' : 'bg-gray-300'}`} />
                             ))}
                         </div>
-                        <p className="text-gray-600">비교 {currentComparison + 1} / {comparisons.length}</p>
                     </div>
 
-                    <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 mb-6 border-2 border-purple-200">
-                        <h3 className="text-xl font-bold text-purple-800 mb-6">🎯 주제: {currentComp.topic}</h3>
+                    <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-6 mb-6 border-2 border-indigo-100">
+                        <h3 className="text-xl font-bold text-indigo-800 mb-6 text-center">🎯 이번 주제: {currentComp.topic}</h3>
                         
                         <div className="grid md:grid-cols-2 gap-6 mb-6">
-                            {currentComp.prompts.map((prompt, idx) => (
-                                <div key={prompt.id} 
-                                    onClick={() => handlePromptClick(prompt.id)}
-                                    className={`cursor-pointer transition-all duration-300 ${
-                                        selectedPrompt === prompt.id ? 'scale-105' : 'hover:scale-102'
-                                    }`}>
-                                    <div className={`bg-white rounded-xl p-5 border-2 ${
-                                        selectedPrompt === prompt.id ? 'border-purple-500 shadow-lg' : 'border-gray-300'
-                                    }`}>
-                                        <div className="flex items-center justify-between mb-3">
-                                            <span className="text-2xl font-bold text-gray-400">프롬프트 {idx + 1}</span>
-                                            <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                                                idx === 0 ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
-                                            }`}>{prompt.style}</span>
-                                        </div>
-                                        <div className="bg-gray-50 rounded-lg p-4 mb-3 border-l-4 border-purple-500">
-                                            <p className="text-gray-800 font-medium">"{prompt.text}"</p>
-                                        </div>
-                                        {showResult && (
-                                            <div className="bg-blue-50 rounded-lg p-4 border-2 border-blue-200 slide-in">
-                                                <div className="text-sm font-bold text-blue-800 mb-2">✨ AI 답변:</div>
-                                                <p className="text-gray-700 text-sm whitespace-pre-line leading-relaxed">{prompt.result}</p>
+                            {[0, 1].map((idx) => {
+                                const side = `p${idx + 1}`;
+                                const prompt = currentComp.prompts[idx];
+                                return (
+                                    <div key={side} className="flex flex-col h-full">
+                                        <div className="bg-gray-800 rounded-t-xl p-3 flex items-center justify-between">
+                                            <span className="text-white text-xs font-mono">Prompt Interface #{idx+1}</span>
+                                            <div className="flex space-x-1">
+                                                <div className="w-2 h-2 rounded-full bg-red-400"></div>
+                                                <div className="w-2 h-2 rounded-full bg-yellow-400"></div>
+                                                <div className="w-2 h-2 rounded-full bg-green-400"></div>
                                             </div>
-                                        )}
+                                        </div>
+                                        <div className="bg-gray-100 p-4 border-x-2 border-gray-200">
+                                            <p className="text-sm font-bold text-gray-500 mb-2">프롬프트 입력:</p>
+                                            <div className="bg-white p-3 rounded-lg border border-gray-300 text-gray-800 text-sm italic shadow-inner">
+                                                "{prompt.text}"
+                                            </div>
+                                        </div>
+                                        <div className="bg-white p-4 border-2 border-t-0 border-gray-200 rounded-b-xl flex-grow flex flex-col">
+                                            {!displayedResult[side] && !isTyping && (
+                                                <button onClick={() => simulateTyping(side)}
+                                                    className="m-auto bg-indigo-600 text-white px-6 py-2 rounded-full font-bold hover:bg-indigo-700 transition-colors flex items-center">
+                                                    <span>전송 및 실행</span>
+                                                    <span className="ml-2">📤</span>
+                                                </button>
+                                            )}
+                                            {displayedResult[side] && (
+                                                <div className="slide-in">
+                                                    <div className="flex items-center mb-2">
+                                                        <span className="bg-indigo-100 text-indigo-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">{prompt.style}</span>
+                                                    </div>
+                                                    <p className={`text-gray-700 text-sm whitespace-pre-line leading-relaxed ${isTyping && selectedSide === side ? 'typing-cursor' : ''}`}>
+                                                        {displayedResult[side]}
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
 
-                        {!showResult ? (
-                            <button 
-                                onClick={handleCompare}
-                                disabled={!selectedPrompt}
-                                className={`w-full py-4 px-6 rounded-xl text-lg font-bold transition-all ${
-                                    selectedPrompt 
-                                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:shadow-lg transform hover:scale-105' 
-                                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                }`}>
-                                {selectedPrompt ? '🔍 결과 비교하기' : '⬆️ 프롬프트를 먼저 선택하세요'}
-                            </button>
-                        ) : (
-                            <div className="space-y-6 fade-in">
-                                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-6 border-2 border-blue-300">
-                                    <div className="flex items-start">
-                                        <span className="text-3xl mr-4">💡</span>
-                                        <div className="flex-1">
-                                            <h4 className="text-xl font-bold text-blue-800 mb-3">차이가 발생한 이유</h4>
-                                            <p className="text-gray-700 text-lg leading-relaxed">{currentComp.explanation}</p>
-                                        </div>
-                                    </div>
+                        {allResultsShown && (
+                            <div className="mt-8 space-y-6 fade-in">
+                                <div className="bg-white border-l-8 border-yellow-400 rounded-xl p-6 shadow-md">
+                                    <h4 className="text-xl font-bold text-gray-800 mb-2 flex items-center">
+                                        <span className="mr-2">💡</span> 실험 관찰 결과
+                                    </h4>
+                                    <p className="text-gray-700 text-lg">{currentComp.explanation}</p>
                                 </div>
-
                                 <button onClick={handleNext}
-                                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xl font-bold py-5 px-8 rounded-2xl hover:shadow-2xl transform hover:scale-105 transition-all">
-                                    {currentComparison < comparisons.length - 1 ? '다음 비교 ➜' : '3단계로 이동 ➜'}
+                                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xl font-bold py-5 px-8 rounded-2xl hover:shadow-2xl transition-all">
+                                    {currentComparison < comparisons.length - 1 ? '다음 실험하기 ➜' : '3단계 분석하기 ➜'}
                                 </button>
                             </div>
                         )}
@@ -423,132 +434,115 @@
         }
 
         function Stage3({ goToStage, markStageComplete }) {
-            const [currentExample, setCurrentExample] = useState(0);
+            const [activeTab, setActiveTab] = useState(0);
+            const [showAnalysis, setShowAnalysis] = useState(false);
 
-            const examples = [
+            const analysisData = [
                 {
-                    id: 'ex1',
-                    title: '명확성의 중요성',
-                    emoji: '🎯',
-                    before: '요리법 알려줘',
-                    after: '초보자도 30분 안에 만들 수 있는 간단한 토마토 파스타 레시피를 알려줘',
-                    keyPoints: [
-                        '대상 명시: "초보자도"',
-                        '시간 조건: "30분 안에"',
-                        '난이도: "간단한"',
-                        '구체적 음식: "토마토 파스타"'
-                    ],
-                    conclusion: '모호한 요청보다 명확한 조건을 제시하면 원하는 답변을 얻을 수 있어요!'
+                    title: "구체적인 페르소나",
+                    icon: "👤",
+                    bad: "운동 가르쳐줘",
+                    good: "너는 10년 경력의 베테랑 헬스 트레이너야. 집에서 도구 없이 할 수 있는 초보자용 하체 루틴을 짜줘.",
+                    points: ["역할 부여 (트레이너)", "도구 제약 (맨몸)", "수준 지정 (초보자)"],
+                    lesson: "AI에게 '누가' 되어야 하는지 알려주면 훨씬 전문적인 답변을 얻을 수 있어요."
                 },
                 {
-                    id: 'ex2',
-                    title: '구체성의 힘',
-                    emoji: '✨',
-                    before: '그림 그려줘',
-                    after: '해변에서 일몰을 감상하는 고양이를 수채화 풍으로 그려줘',
-                    keyPoints: [
-                        '장소: "해변"',
-                        '상황: "일몰을 감상하는"',
-                        '대상: "고양이"',
-                        '스타일: "수채화 풍"'
-                    ],
-                    conclusion: '세부 사항을 구체적으로 명시할수록 더 정확한 결과를 얻을 수 있어요!'
+                    title: "명확한 출력 형식",
+                    icon: "📋",
+                    bad: "책 추천해줘",
+                    good: "베스트셀러 인문학 도서 3권을 추천해줘. [제목 / 저자 / 핵심내용 한 줄 요약] 형식으로 표 형태로 정리해줘.",
+                    points: ["수량 한정 (3권)", "장르 지정 (인문학)", "형식 지정 (표, 한 줄 요약)"],
+                    lesson: "원하는 답변의 모양을 미리 정해주면 정리할 필요 없이 바로 사용할 수 있어요."
                 },
                 {
-                    id: 'ex3',
-                    title: '단계적 지시',
-                    emoji: '📋',
-                    before: '프로그램 만들어줘',
-                    after: 'Python으로 사칙연산 계산기를 만들어줘. 1) 함수로 구현 2) 각 함수에 주석 추가 3) 사용 예시 포함',
-                    keyPoints: [
-                        '언어 지정: "Python"',
-                        '기능 명시: "사칙연산 계산기"',
-                        '구조 요청: "함수로 구현"',
-                        '추가 요구사항: "주석", "예시"'
-                    ],
-                    conclusion: '복잡한 요청은 단계를 나누어 명확하게 지시하면 더 체계적인 결과를 얻어요!'
+                    title: "단계별 사고 유도",
+                    icon: "⛓️",
+                    bad: "수학 문제 풀어줘",
+                    good: "이 문제를 단계별로 생각해서 풀어보자. 먼저 공식을 설명하고, 그다음 숫자를 대입해서 계산 과정을 보여줘.",
+                    points: ["사고 방식 유도 (단계별)", "구성 요소 (공식 → 계산)", "논리성 강화"],
+                    lesson: "복잡한 문제는 '단계별로 생각하라'는 문구만으로도 정답률이 훨씬 올라갑니다."
                 }
             ];
 
-            const currentEx = examples[currentExample];
-
-            const handleNext = () => {
-                if (currentExample < examples.length - 1) {
-                    setCurrentExample(currentExample + 1);
-                } else {
-                    markStageComplete('stage3');
-                    goToStage(4);
-                }
-            };
+            const current = analysisData[activeTab];
 
             return (
                 <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 fade-in">
                     <div className="text-center mb-8">
-                        <div className="text-6xl mb-6 bounce">{currentEx.emoji}</div>
-                        <h2 className="text-3xl font-bold text-gray-800 mb-4">3단계: 차이를 만드는 이유 분석하기</h2>
-                        <div className="flex justify-center gap-2 mb-4">
-                            {examples.map((_, idx) => (
-                                <div key={idx} className={`w-3 h-3 rounded-full ${idx === currentExample ? 'bg-purple-500' : idx < currentExample ? 'bg-green-500' : 'bg-gray-300'}`} />
-                            ))}
-                        </div>
-                        <p className="text-gray-600">{currentExample + 1} / {examples.length}</p>
+                        <div className="text-6xl mb-6 bounce">🧠</div>
+                        <h2 className="text-3xl font-bold text-gray-800 mb-4">3단계: 프롬프트 업그레이드 분석</h2>
+                        <p className="text-gray-600">작은 차이가 완벽한 답변을 만듭니다.</p>
                     </div>
 
-                    <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 mb-6 border-2 border-purple-200">
-                        <h3 className="text-2xl font-bold text-purple-800 mb-8 text-center">{currentEx.title}</h3>
+                    <div className="flex flex-wrap justify-center gap-4 mb-8">
+                        {analysisData.map((item, idx) => (
+                            <button key={idx} onClick={() => {setActiveTab(idx); setShowAnalysis(false);}}
+                                className={`px-6 py-3 rounded-full font-bold transition-all ${
+                                    activeTab === idx ? 'bg-purple-600 text-white shadow-lg scale-105' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                }`}>
+                                {item.icon} {item.title}
+                            </button>
+                        ))}
+                    </div>
 
-                        <div className="space-y-6 mb-8">
-                            <div className="bg-red-50 rounded-xl p-6 border-2 border-red-300">
-                                <div className="flex items-center mb-3">
-                                    <span className="text-2xl mr-3">❌</span>
-                                    <h4 className="font-bold text-red-800 text-lg">개선 전</h4>
-                                </div>
-                                <div className="bg-white rounded-lg p-4">
-                                    <p className="text-gray-800 font-medium text-lg">"{currentEx.before}"</p>
-                                </div>
-                            </div>
-
-                            <div className="flex justify-center">
-                                <div className="text-4xl">⬇️</div>
-                            </div>
-
-                            <div className="bg-green-50 rounded-xl p-6 border-2 border-green-300">
-                                <div className="flex items-center mb-3">
-                                    <span className="text-2xl mr-3">✅</span>
-                                    <h4 className="font-bold text-green-800 text-lg">개선 후</h4>
-                                </div>
-                                <div className="bg-white rounded-lg p-4">
-                                    <p className="text-gray-800 font-medium text-lg">"{currentEx.after}"</p>
-                                </div>
+                    <div className="grid md:grid-cols-2 gap-8 mb-8">
+                        <div className="bg-red-50 rounded-2xl p-6 border-t-8 border-red-400 shadow-sm">
+                            <h4 className="font-bold text-red-800 text-lg mb-4 flex items-center">
+                                <span className="mr-2">❌</span> Before (일반 프롬프트)
+                            </h4>
+                            <div className="bg-white p-4 rounded-xl border border-red-200 min-h-[100px] flex items-center">
+                                <p className="text-gray-700 italic">"{current.bad}"</p>
                             </div>
                         </div>
+                        <div className="bg-green-50 rounded-2xl p-6 border-t-8 border-green-400 shadow-sm relative">
+                            <h4 className="font-bold text-green-800 text-lg mb-4 flex items-center">
+                                <span className="mr-2">✅</span> After (업그레이드 프롬프트)
+                            </h4>
+                            <div className="bg-white p-4 rounded-xl border border-green-200 min-h-[100px] flex items-center">
+                                <p className="text-gray-800 font-bold">"{current.good}"</p>
+                            </div>
+                            <div className="mt-4 flex justify-end">
+                                <button onClick={() => setShowAnalysis(true)}
+                                    className="text-sm font-bold text-green-700 hover:underline">
+                                    업그레이드 포인트 보기 🔍
+                                </button>
+                            </div>
+                        </div>
+                    </div>
 
-                        <div className="bg-blue-50 rounded-xl p-6 border-2 border-blue-300 mb-6">
-                            <h4 className="font-bold text-blue-800 mb-4 text-lg">🔍 개선 포인트</h4>
-                            <div className="space-y-2">
-                                {currentEx.keyPoints.map((point, idx) => (
-                                    <div key={idx} className="flex items-start bg-white rounded-lg p-3">
-                                        <span className="text-blue-600 mr-3 font-bold">{idx + 1}.</span>
-                                        <span className="text-gray-700">{point}</span>
+                    {showAnalysis && (
+                        <div className="bg-blue-50 rounded-2xl p-8 border-2 border-blue-200 slide-in mb-8">
+                            <h4 className="text-xl font-bold text-blue-900 mb-6">🔍 무엇이 달라졌나요?</h4>
+                            <div className="grid md:grid-cols-3 gap-4 mb-8">
+                                {current.points.map((p, i) => (
+                                    <div key={i} className="bg-white p-4 rounded-xl shadow-sm border-b-4 border-blue-400">
+                                        <span className="text-blue-600 font-black text-lg mr-2">#{i+1}</span>
+                                        <span className="text-gray-700 font-bold">{p}</span>
                                     </div>
                                 ))}
                             </div>
-                        </div>
-
-                        <div className="bg-gradient-to-r from-yellow-50 to-amber-50 rounded-xl p-6 border-2 border-yellow-300">
-                            <div className="flex items-start">
-                                <span className="text-3xl mr-4">💡</span>
-                                <div className="flex-1">
-                                    <p className="text-gray-800 font-bold text-lg">{currentEx.conclusion}</p>
-                                </div>
+                            <div className="bg-white p-6 rounded-xl border-l-8 border-indigo-500">
+                                <p className="text-indigo-900 font-bold text-lg">
+                                    💡 핵심 요약: {current.lesson}
+                                </p>
                             </div>
                         </div>
-                    </div>
+                    )}
 
-                    <button onClick={handleNext}
-                        className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xl font-bold py-5 px-8 rounded-2xl hover:shadow-2xl transform hover:scale-105 transition-all">
-                        {currentExample < examples.length - 1 ? '다음 예시 ➜' : '4단계로 이동 ➜'}
-                    </button>
+                    <div className="flex flex-col space-y-4">
+                        <button onClick={() => {
+                            if (activeTab < analysisData.length - 1) {
+                                setActiveTab(prev => prev + 1);
+                                setShowAnalysis(false);
+                            } else {
+                                markStageComplete('stage3');
+                                goToStage(4);
+                            }
+                        }}
+                        className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xl font-bold py-5 px-8 rounded-2xl hover:shadow-2xl transition-all">
+                            {activeTab < analysisData.length - 1 ? '다음 분석 내용 ➜' : '이해 완료! 문제 풀기 ➜'}
+                        </button>
+                    </div>
                 </div>
             );
         }
