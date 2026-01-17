@@ -45,6 +45,7 @@
         function PromptChallenge() {
             const [stage, setStage] = useState(0);
             const [totalScore, setTotalScore] = useState(0);
+            const [maxReachedStage, setMaxReachedStage] = useState(0); // 사용자가 도달한 최대 단계 추적
             const [completedStages, setCompletedStages] = useState({
                 stage1: false, stage2: false, stage3: false, stage4: false
             });
@@ -55,6 +56,13 @@
             };
             
             const goToStage = (stageNum) => setStage(stageNum);
+
+            // 현재 단계가 바뀔 때마다 최대 도달 단계 업데이트
+            useEffect(() => {
+                if (stage > maxReachedStage) {
+                    setMaxReachedStage(stage);
+                }
+            }, [stage]);
 
             const markStageComplete = (stageKey) => {
                 setCompletedStages(prev => ({ ...prev, [stageKey]: true }));
@@ -93,14 +101,17 @@
                                             const stageNum = idx + 1;
                                             const isCurrentStage = stageNum === stage;
                                             const isCompleted = completedStages[`stage${stageNum}`] || (stageNum === 5 && allStagesCompleted);
-                                            const canAccess = stageNum <= stage || allStagesCompleted;
+                                            
+                                            // 수정된 로직: 현재 단계보다 이전 단계이거나, 이미 한 번이라도 도달했던 단계라면 클릭 가능
+                                            const canAccess = stageNum <= maxReachedStage || allStagesCompleted;
                                             
                                             return (
                                                 <button key={idx} onClick={() => goToStage(stageNum)}
                                                     disabled={!canAccess}
                                                     className={`flex flex-col items-center px-2 py-2 rounded-xl transition-all duration-300 ${
-                                                        isCurrentStage ? 'bg-purple-500 text-white scale-110'
+                                                        isCurrentStage ? 'bg-purple-500 text-white scale-110 shadow-lg ring-2 ring-white ring-opacity-50'
                                                         : isCompleted ? 'bg-lime-400 text-white hover:scale-105'
+                                                        : canAccess ? 'bg-white bg-opacity-40 text-white hover:bg-opacity-60 hover:scale-105'
                                                         : 'bg-white bg-opacity-30 text-white opacity-50 cursor-not-allowed'
                                                     }`}>
                                                     <div className="text-lg mb-1">
@@ -462,7 +473,6 @@
             );
         }
 
-        /* 3단계: 수정된 프롬프트 수정하기 로직 */
         function Stage3({ goToStage, markStageComplete }) {
             const [currentChallenge, setCurrentChallenge] = useState(0);
             const [chatHistory, setChatHistory] = useState([]);
