@@ -24,10 +24,10 @@
     <div id="root"></div>
     <script type="text/babel">
         const { useState, useRef, useEffect } = React;
-        const MAX_SCORE = 140;
+        const MAX_SCORE = 250;
         const STAGE1_MAX = 40;
-        const STAGE2_MAX = 60;
-        const STAGE3_MAX = 40;
+        const STAGE2_MAX = 150;
+        const STAGE3_MAX = 60;
 
         function AIBiasDetective() {
             const [stage, setStage] = useState(0);
@@ -54,8 +54,8 @@
             const CurrentComponent = stages[stage].component;
 
             const stage1Done = Object.keys(completedStages.stage1).length === 4;
-            const stage2Done = Object.keys(completedStages.stage2).length === 4;
-            const stage3Done = Object.keys(completedStages.stage3).length === 4;
+            const stage2Done = Object.keys(completedStages.stage2).length === 10;
+            const stage3Done = Object.keys(completedStages.stage3).length === 6;
 
             return (
                 <div className="min-h-screen py-8 px-4">
@@ -126,8 +126,8 @@
                         <div className="space-y-4">
                             {[
                                 { icon: '1️⃣', title: '공정함 이해하기 (40점)', desc: 'O/X 퀴즈로 공정함의 의미를 배워요' },
-                                { icon: '2️⃣', title: 'AI 편향 찾기 (60점)', desc: 'AI가 만든 결과물에서 편향을 찾아요' },
-                                { icon: '3️⃣', title: '핵심 정리 (40점)', desc: '배운 내용을 정리해요' },
+                                { icon: '2️⃣', title: 'AI 편향 찾기 (150점)', desc: '10가지 사례를 통해 편향을 찾아내요' },
+                                { icon: '3️⃣', title: '핵심 정리 (60점)', desc: '배운 내용을 퀴즈로 정리해요' },
                                 { icon: '4️⃣', title: '결과 확인', desc: '인증서를 받아요' }
                             ].map((item, i) => (
                                 <div key={i} className="flex items-start bg-white bg-opacity-60 rounded-xl p-4">
@@ -257,11 +257,13 @@
             );
         }
 
+        /* 2단계 수정: 힌트 버튼 위치를 질문 영역 내부 하단으로 이동 */
         function Stage2({ goToStage, updateScore, completedStages, setCompletedStages }) {
             const [currentCase, setCurrentCase] = useState(0);
             const [selectedImage, setSelectedImage] = useState(null);
             const [showFeedback, setShowFeedback] = useState(false);
             const [attempts, setAttempts] = useState({});
+            const [showHints, setShowHints] = useState(false);
 
             const cases = [
                 { id: 1, title: "AI가 그린 '프로그래머' 그림", emoji: "💻", question: "편향이 없는 공정한 그림은?",
@@ -291,6 +293,48 @@
                       feedback: { title: '편향이 있어요! 🤔', reason: '한 가지 인종만', explanation: '다양한 인종의 선생님이 있어요.' }},
                     { id: 'B', visual: '👨🏻‍🏫👩🏽‍🏫👨🏾‍🏫', detail: '백인 남성, 흑인 여성, 흑인 남성', biased: false,
                       feedback: { title: '공정해요! 🌍', reason: '다양하게 표현했어요', explanation: '선생님은 누구나 될 수 있어요.' }}
+                  ]},
+                { id: 5, title: "AI가 그린 'CEO(최고경영자)'", emoji: "👔", question: "편향이 없는 공정한 그림은?",
+                  images: [
+                    { id: 'A', visual: '👴🏻👴🏼👴🏽', detail: '중장년 남성들', biased: true,
+                      feedback: { title: '편향이 있어요! 🚨', reason: '나이와 성별의 고정관념', explanation: 'CEO는 젊을 수도, 여성일 수도 있습니다.' }},
+                    { id: 'B', visual: '👩🏻👨🏽👩🏼', detail: '동양인 여성, 흑인 남성, 백인 여성', biased: false,
+                      feedback: { title: '공정해요! ✨', reason: '성별과 인종의 조화', explanation: '누구나 리더가 될 수 있는 다양성을 보여줍니다.' }}
+                  ]},
+                { id: 6, title: "AI가 그린 '가사 노동하는 사람'", emoji: "🧹", question: "편향이 없는 공정한 그림은?",
+                  images: [
+                    { id: 'A', visual: '👩🏻👩🏼👩🏽', detail: '여러 인종의 여성들', biased: true,
+                      feedback: { title: '편향이 있어요! 🚨', reason: '성별 고정관념', explanation: '집안일은 여성만 한다는 편견이 반영되었습니다.' }},
+                    { id: 'B', visual: '👨🏻👩🏽👨🏾', detail: '여러 인종의 남성과 여성', biased: false,
+                      feedback: { title: '공정해요! 🏠', reason: '성별 역할 탈피', explanation: '가사 노동은 성별에 관계없이 함께 하는 일입니다.' }}
+                  ]},
+                { id: 7, title: "AI가 그린 '과학자'", emoji: "🔬", question: "편향이 없는 공정한 그림은?",
+                  images: [
+                    { id: 'A', visual: '👨🏻‍🔬👩🏼‍🔬👨🏾‍🔬', detail: '다양한 성별과 인종', biased: false,
+                      feedback: { title: '공정해요! 🧪', reason: '다양한 연구자들', explanation: '전 세계의 다양한 사람들이 과학 발전에 기여합니다.' }},
+                    { id: 'B', visual: '👨🏻‍🔬👨🏻‍🔬👨🏾‍🔬', detail: '다양한 인종', biased: true,
+                      feedback: { title: '편향이 있어요! 🚨', reason: '이미지의 정형화', explanation: '과학자에 대한 특정 성별의 편견이 담겼습니다.' }}
+                  ]},
+                { id: 8, title: "AI가 그린 '육아하는 모습'", emoji: "🍼", question: "편향이 없는 공정한 그림은?",
+                  images: [
+                    { id: 'A', visual: '👩🏻👩🏻👩🏻', detail: '아이를 돌보는 엄마들', biased: true,
+                      feedback: { title: '편향이 있어요! 🚨', reason: '부모 역할의 편중', explanation: '아빠들도 육아에 적극적으로 참여합니다.' }},
+                    { id: 'B', visual: '👨🏻👩🏼👨🏾', detail: '아이를 돌보는 아빠와 엄마', biased: false,
+                      feedback: { title: '공정해요! ❤️', reason: '공동 육아의 모습', explanation: '육아의 주체는 성별에 국한되지 않습니다.' }}
+                  ]},
+                { id: 9, title: "AI가 그린 '운동 선수'", emoji: "🏃", question: "편향이 없는 공정한 그림은?",
+                  images: [
+                    { id: 'A', visual: '🏃‍♂️🏃‍♀️👩🏼‍🦽', detail: '남녀 선수와 휠체어 선수', biased: false,
+                      feedback: { title: '공정해요! 🥇', reason: '신체적 조건의 다양성', explanation: '장애 유무와 관계없이 누구나 스포츠를 즐깁니다.' }},
+                    { id: 'B', visual: '🏃‍♂️🏃‍♂️🏃‍♂️', detail: '근육질의 남성 선수들', biased: true,
+                      feedback: { title: '편향이 있어요! 🚨', reason: '신체 및 성별 편향', explanation: '여성 선수나 파라 선수의 모습이 빠져있습니다.' }}
+                  ]},
+                { id: 10, title: "AI가 그린 '세계의 어린이'", emoji: "🧒", question: "편향이 없는 공정한 그림은?",
+                  images: [
+                    { id: 'A', visual: '👧🏼👦🏼👧🏼', detail: '금발의 백인 아이들', biased: true,
+                      feedback: { title: '편향이 있어요! 🚨', reason: '특정 지역 편중', explanation: '지구촌에는 훨씬 더 다양한 모습의 아이들이 살고 있습니다.' }},
+                    { id: 'B', visual: '👧🏻👦🏾👧🏼', detail: '다양한 인종의 아이들', biased: false,
+                      feedback: { title: '공정해요! 🌏', reason: '글로벌 다양성', explanation: '모든 인종의 어린이가 동등하게 표현되어야 합니다.' }}
                   ]}
             ];
 
@@ -324,6 +368,7 @@
                         setCurrentCase(currentCase + 1);
                         setSelectedImage(null);
                         setShowFeedback(false);
+                        setShowHints(false);
                     } else {
                         goToStage(3);
                     }
@@ -342,20 +387,33 @@
                         <div className="inline-block bg-purple-100 text-purple-800 px-4 py-2 rounded-full font-bold mb-4">사례 {currentCase + 1} / {cases.length}</div>
                         <h2 className="text-3xl font-bold text-gray-800 mb-4">{c.title}</h2>
                     </div>
-                    {/* 문제 설명 문구 추가 위치 */}
-                    <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 mb-8 border-2 border-purple-200">
-                        <p className="text-2xl font-bold text-center text-purple-700">{c.question}</p>
+                    {/* 질문 영역 수정: 힌트 버튼을 질문 아래로 배치 */}
+                    <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 mb-8 border-2 border-purple-200 text-center">
+                        <p className="text-2xl font-bold text-purple-700 mb-4">{c.question}</p>
+                        {!showFeedback && (
+                            <button 
+                                onClick={() => setShowHints(!showHints)} 
+                                className="text-sm font-bold text-purple-600 border border-purple-300 px-4 py-2 rounded-full hover:bg-purple-50 transition-colors shadow-sm"
+                            >
+                                {showHints ? "💡 힌트 숨기기" : "🔍 힌트 보기"}
+                            </button>
+                        )}
                     </div>
 
                     {!showFeedback ? (
                         <div className="grid md:grid-cols-2 gap-8 mb-8">
                             {c.images.map(img => (
-                                <div key={img.id} onClick={() => handleSelect(img)} className="cursor-pointer bg-gradient-to-br from-gray-50 to-gray-100 p-8 rounded-3xl border-4 border-gray-200 hover:border-purple-400 transition-all hover:shadow-2xl hover:scale-105">
+                                <div key={img.id} className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 rounded-3xl border-4 border-gray-200 transition-all shadow-md relative group">
                                     <div className="text-center mb-6">
                                         <div className="inline-block bg-purple-100 px-4 py-2 rounded-full font-bold text-purple-700 mb-4">이미지 {img.id}</div>
                                     </div>
                                     <div className="text-7xl mb-6 text-center leading-tight">{img.visual}</div>
-                                    <p className="text-center text-gray-600 text-base font-medium">{img.detail}</p>
+                                    <p className={`text-center text-gray-600 text-base font-medium min-h-[1.5rem] transition-opacity duration-300 mb-6 ${showHints ? 'opacity-100' : 'opacity-0'}`}>
+                                        {img.detail}
+                                    </p>
+                                    <button onClick={() => handleSelect(img)} className="w-full bg-white border-2 border-purple-500 text-purple-600 font-bold py-3 rounded-xl hover:bg-purple-500 hover:text-white transition-all transform hover:scale-105 shadow-md">
+                                        선택하기
+                                    </button>
                                 </div>
                             ))}
                         </div>
@@ -380,12 +438,12 @@
                     )}
                     <div className="flex gap-4">
                         {currentCase > 0 && (
-                            <button onClick={() => { setCurrentCase(currentCase - 1); setSelectedImage(null); setShowFeedback(false); }} className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-4 px-6 rounded-2xl transition-all">← 이전 사례</button>
+                            <button onClick={() => { setCurrentCase(currentCase - 1); setSelectedImage(null); setShowFeedback(false); setShowHints(false); }} className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-4 px-6 rounded-2xl transition-all">← 이전 사례</button>
                         )}
                         {showFeedback && (
                             <button onClick={handleNext} className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xl font-bold py-5 px-8 rounded-2xl hover:shadow-2xl transform hover:scale-105 transition-all">
-                                {!selectedImage.biased ? (currentCase < cases.length - 1 ? '다음 사례 →' : '핵심 정리하기 🎯')
-                                : (attempts[c.id] >= 2 ? (currentCase < cases.length - 1 ? '다음 사례 →' : '핵심 정리하기 🎯') : '다시 도전하기 🔄')}
+                                {!selectedImage.biased ? (currentCase < cases.length - 1 ? '다음 사례 →' : '핵심 정리 학습하기 📖')
+                                : (attempts[c.id] >= 2 ? (currentCase < cases.length - 1 ? '다음 사례 →' : '핵심 정리 학습하기 📖') : '다시 도전하기 🔄')}
                             </button>
                         )}
                     </div>
@@ -393,7 +451,9 @@
             );
         }
 
+        /* 3단계 수정: 퀴즈 전 학습 페이지를 먼저 노출하는 로직 추가 */
         function Stage3({ goToStage, updateScore, completedStages, setCompletedStages }) {
+            const [isLearning, setIsLearning] = useState(true); // 학습 중인지 여부 상태값
             const [selected, setSelected] = useState({});
             const [attempts, setAttempts] = useState({});
 
@@ -425,6 +485,20 @@
                     { id: 'b', text: "최신 기술만 사용하는 것이다", correct: false },
                     { id: 'c', text: "다양한 집단의 데이터를 균형있게 수집하는 것이다", correct: true },
                     { id: 'd', text: "AI를 가능한 한 적게 사용하는 것이다", correct: false }
+                  ]},
+                { id: 5, text: "AI의 편향을 줄이기 위한 개발자의 노력으로 옳은 것은", explanation: "알고리즘이 특정 집단에 유리하게 작동하지 않는지 계속 점검해야 합니다.",
+                  options: [
+                    { id: 'a', text: "성능 향상을 위해 편향을 무시한다", correct: false },
+                    { id: 'b', text: "알고리즘의 공정성을 주기적으로 점검한다", correct: true },
+                    { id: 'c', text: "사용자가 원하는 편향된 결과만 제공한다", correct: false },
+                    { id: 'd', text: "데이터 수집 과정을 비밀로 유지한다", correct: false }
+                  ]},
+                { id: 6, text: "생활 속에서 AI를 현명하게 사용하는 방법은", explanation: "AI도 실수하거나 편향될 수 있음을 알고, 여러 정보를 비교하며 사용해야 합니다.",
+                  options: [
+                    { id: 'a', text: "AI가 주는 정보만 정답이라고 생각한다", correct: false },
+                    { id: 'b', text: "AI가 만든 이미지나 글의 편향성을 살펴본다", correct: true },
+                    { id: 'c', text: "무조건 AI가 시키는 대로 행동한다", correct: false },
+                    { id: 'd', text: "검증되지 않은 AI 결과를 그대로 공유한다", correct: false }
                   ]}
             ];
 
@@ -449,6 +523,47 @@
 
             const allDone = Object.keys(completedStages.stage3).length === questions.length;
 
+            // 3단계 신규 학습 페이지
+            if (isLearning) {
+                return (
+                    <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 fade-in">
+                        <div className="text-center mb-8">
+                            <div className="text-6xl mb-6">📖</div>
+                            <h2 className="text-3xl font-bold text-gray-800 mb-4">공정한 AI와 편향 알아보기</h2>
+                            <p className="text-lg text-gray-600 mb-8">퀴즈를 풀기 전에 중요한 내용을 함께 정리해 볼까요?</p>
+                        </div>
+                        
+                        <div className="space-y-6 mb-10 text-left">
+                            <div className="bg-purple-50 rounded-2xl p-6 border-l-8 border-purple-400">
+                                <h3 className="text-xl font-bold text-purple-800 mb-2">1. AI 편향이란 무엇인가요?</h3>
+                                <p className="text-gray-700 leading-relaxed">
+                                    AI가 특정 성별, 인종, 나이 등을 차별하거나 <strong>고정관념이 섞인 결과</strong>를 내놓는 것을 말해요. 이는 AI가 공부하는 '데이터'가 한쪽으로 치우쳐 있을 때 주로 발생합니다.
+                                </p>
+                            </div>
+                            
+                            <div className="bg-blue-50 rounded-2xl p-6 border-l-8 border-blue-400">
+                                <h3 className="text-xl font-bold text-blue-800 mb-2">2. 공정한 AI를 만들려면?</h3>
+                                <p className="text-gray-700 leading-relaxed">
+                                    <strong>다양한 집단의 데이터</strong>를 골고루 수집해서 학습시켜야 해요. 또한 개발자들은 알고리즘이 누군가를 차별하지 않는지 <strong>주기적으로 점검</strong>하는 노력이 필요합니다.
+                                </p>
+                            </div>
+
+                            <div className="bg-green-50 rounded-2xl p-6 border-l-8 border-green-400">
+                                <h3 className="text-xl font-bold text-green-800 mb-2">3. 우리의 올바른 태도는?</h3>
+                                <p className="text-gray-700 leading-relaxed">
+                                    AI의 결과를 무조건 정답이라고 믿기보다, <strong>비판적인 시각</strong>으로 바라보는 습관을 가져야 해요. "이 결과에 편견이 섞여 있지는 않을까?" 하고 고민해 보는 것이 중요합니다.
+                                </p>
+                            </div>
+                        </div>
+
+                        <button onClick={() => setIsLearning(false)} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xl font-bold py-5 px-8 rounded-2xl hover:shadow-2xl transform hover:scale-105 transition-all">
+                            학습 완료! 핵심 정리 퀴즈 풀기 📝
+                        </button>
+                    </div>
+                );
+            }
+
+            // 기존 핵심 정리 퀴즈 화면
             return (
                 <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 fade-in">
                     <div className="text-center mb-8">
@@ -547,8 +662,8 @@
             }, [allChecked, setAllStagesCompleted]);
 
             let level = '', emoji = '', rank = '', comment = '';
-            if (totalScore >= 110) { level = '셜록 홈즈급'; emoji = '🎩'; rank = 'MASTER'; comment = '마스터 탐정!'; }
-            else if (totalScore >= 80) { level = '명탐정급'; emoji = '🧐'; rank = 'EXPERT'; comment = '숙련 탐정!'; }
+            if (totalScore >= 210) { level = '셜록 홈즈급'; emoji = '🎩'; rank = 'MASTER'; comment = '마스터 탐정!'; }
+            else if (totalScore >= 160) { level = '명탐정급'; emoji = '🧐'; rank = 'EXPERT'; comment = '숙련 탐정!'; }
             else { level = '신참 탐정급'; emoji = '🔍'; rank = 'ROOKIE'; comment = '견습 탐정!'; }
 
             const downloadCert = () => {
@@ -633,9 +748,9 @@
                         <h3 className="text-xl font-bold text-amber-800 mb-4">🏅 탐정 레벨 기준</h3>
                         <div className="grid md:grid-cols-3 gap-4 text-left">
                             {[
-                                { e: '🎩', n: '셜록 홈즈급', r: 'MASTER', s: '110점 이상', h: totalScore >= 110 },
-                                { e: '🧐', n: '명탐정급', r: 'EXPERT', s: '80-109점', h: totalScore >= 80 && totalScore < 110 },
-                                { e: '🔍', n: '신참 탐정급', r: 'ROOKIE', s: '79점 이하', h: totalScore < 80 }
+                                { e: '🎩', n: '셜록 홈즈급', r: 'MASTER', s: '210점 이상', h: totalScore >= 210 },
+                                { e: '🧐', n: '명탐정급', r: 'EXPERT', s: '160-209점', h: totalScore >= 160 && totalScore < 210 },
+                                { e: '🔍', n: '신참 탐정급', r: 'ROOKIE', s: '159점 이하', h: totalScore < 160 }
                             ].map((l, i) => (
                                 <div key={i} className={`bg-white rounded-xl p-4 border-2 ${l.h ? 'border-amber-400 shadow-lg' : 'border-gray-200'}`}>
                                     <div className="text-3xl mb-2">{l.e}</div>
