@@ -24,10 +24,12 @@
     <div id="root"></div>
     <script type="text/babel">
         const { useState, useRef, useEffect } = React;
-        const MAX_SCORE = 250;
-        const STAGE1_MAX = 40;
+        
+        // 수정된 점수 체계 상숫값
+        const MAX_SCORE = 300; 
+        const STAGE1_MAX = 50; 
         const STAGE2_MAX = 150;
-        const STAGE3_MAX = 60;
+        const STAGE3_MAX = 100;
 
         function AIBiasDetective() {
             const [stage, setStage] = useState(0);
@@ -38,8 +40,17 @@
             const [allStagesCompleted, setAllStagesCompleted] = useState(false);
             const totalScore = scores.stage1 + scores.stage2 + scores.stage3;
             
-            const updateScore = (stageKey, points) => {
-                setScores(prev => ({ ...prev, [stageKey]: prev[stageKey] + points }));
+            // 점수 부여 여부 확인 로직 (이미 완료된 문항은 점수 미부여)
+            const updateScore = (stageKey, points, qId) => {
+                setCompletedStages(prev => {
+                    if (prev[stageKey][qId]) return prev; // 이미 푼 문제면 점수 반영 안함
+                    
+                    setScores(sPrev => ({ ...sPrev, [stageKey]: sPrev[stageKey] + points }));
+                    return {
+                        ...prev,
+                        [stageKey]: { ...prev[stageKey], [qId]: true }
+                    };
+                });
             };
             
             const goToStage = (stageNum) => setStage(stageNum);
@@ -53,9 +64,9 @@
             ];
             const CurrentComponent = stages[stage].component;
 
-            const stage1Done = Object.keys(completedStages.stage1).length === 4;
+            const stage1Done = Object.keys(completedStages.stage1).length === 5; // 5문제
             const stage2Done = Object.keys(completedStages.stage2).length === 10;
-            const stage3Done = Object.keys(completedStages.stage3).length === 6;
+            const stage3Done = Object.keys(completedStages.stage3).length === 10; // 10문제
 
             return (
                 <div className="min-h-screen py-8 px-4">
@@ -125,9 +136,9 @@
                         <h3 className="text-2xl font-bold text-purple-800 mb-6 text-center">🎮 탐정 활동 미션</h3>
                         <div className="space-y-4">
                             {[
-                                { icon: '1️⃣', title: '공정함 이해하기 (40점)', desc: 'O/X 퀴즈로 공정함의 의미를 배워요' },
+                                { icon: '1️⃣', title: '공정함 이해하기 (50점)', desc: 'O/X 퀴즈로 공정함의 의미를 배워요' },
                                 { icon: '2️⃣', title: 'AI 편향 찾기 (150점)', desc: '10가지 사례를 통해 편향을 찾아내요' },
-                                { icon: '3️⃣', title: '핵심 정리 (60점)', desc: '배운 내용을 퀴즈로 정리해요' },
+                                { icon: '3️⃣', title: '핵심 정리 (100점)', desc: '배운 내용을 퀴즈로 정리해요' },
                                 { icon: '4️⃣', title: '결과 확인', desc: '인증서를 받아요' }
                             ].map((item, i) => (
                                 <div key={i} className="flex items-start bg-white bg-opacity-60 rounded-xl p-4">
@@ -147,59 +158,44 @@
             );
         }
 
-        function Stage1({ goToStage, updateScore, completedStages, setCompletedStages }) {
+        function Stage1({ goToStage, updateScore, completedStages }) {
             const [currentQ, setCurrentQ] = useState(0);
             const [showFeedback, setShowFeedback] = useState(false);
             const [selectedAnswer, setSelectedAnswer] = useState(null);
-            const [attempts, setAttempts] = useState({});
 
             const questions = [
                 { id: 1, emoji: "🎓", situation: "학교에서 수학 성적이 높은 학생들에게만\n특별 프로그램 참여 기회를 줍니다.", question: "이것은 공정한가요?", correctAnswer: "O",
-                  explanation: { O: "정답이에요! 능력에 따라 다른 기회를 주는 것은 공정할 수 있어요.", X: "아쉬워요. 이건 공정해요! 모든 학생이 시험을 볼 기회가 있었고, 성적이라는 객관적 기준으로 선발했어요." }},
+                  explanation: { O: "정답이에요! 능력에 따라 다른 기회를 주는 것은 공정할 수 있어요.", X: "아쉬워요. 이건 공정해요! 성적이라는 객관적 기준으로 선발했기 때문이에요." }},
                 { id: 2, emoji: "⚽", situation: "축구팀 주장 선거에서 남학생만 후보로\n등록할 수 있다고 합니다.", question: "이것은 공정한가요?", correctAnswer: "X",
                   explanation: { O: "아쉬워요. 이건 불공정해요! 성별로 기회를 제한하는 것은 차별이에요.", X: "정답이에요! 성별로 기회를 제한하는 것은 불공정해요." }},
                 { id: 3, emoji: "🎨", situation: "미술 대회에서 심사위원이 자신이 좋아하는\n스타일의 그림에만 높은 점수를 줍니다.", question: "이것은 공정한가요?", correctAnswer: "X",
                   explanation: { O: "아쉬워요. 이건 불공정해요! 개인적인 취향만으로 평가하면 안 돼요.", X: "정답이에요! 개인 취향만으로 평가하는 것은 불공정해요." }},
                 { id: 4, emoji: "🦽", situation: "시험 시간에 장애가 있는 학생에게만\n추가 시간을 더 줍니다.", question: "이것은 공정한가요?", correctAnswer: "O",
-                  explanation: { O: "정답이에요! 장애로 인한 불리함을 보완해주는 것은 '형평성'이에요.", X: "아쉬워요. 이건 사실 공정해요! 장애로 인한 불리함을 보완해주는 것은 진정한 공정함을 위해 필요해요." }}
+                  explanation: { O: "정답이에요! 장애로 인한 불리함을 보완해주는 것은 '형평성'이에요.", X: "아쉬워요. 장애로 인한 불리함을 보완해주는 것은 진정한 공정함을 위해 필요해요." }},
+                { id: 5, emoji: "🥪", situation: "급식 시간에 배가 더 고픈 사람에게만\n음식을 훨씬 더 많이 나누어 줍니다.", question: "이것은 공정한가요?", correctAnswer: "X",
+                  explanation: { O: "아쉬워요. 주관적인 이유로 배분을 다르게 하는 것은 규칙상 불공정할 수 있어요.", X: "정답이에요! 모든 사람에게 정해진 규칙대로 배분하는 것이 기본입니다." }}
             ];
 
             const handleAnswer = (answer) => {
-                const qId = questions[currentQ].id;
-                const currentAttempts = (attempts[qId] || 0) + 1;
-                setAttempts(prev => ({ ...prev, [qId]: currentAttempts }));
                 setSelectedAnswer(answer);
                 setShowFeedback(true);
                 const isCorrect = answer === questions[currentQ].correctAnswer;
                 
                 if (isCorrect) {
-                    let points = 10;
-                    if (currentAttempts === 2) points = 7;
-                    updateScore('stage1', points);
-                    setCompletedStages(prev => ({
-                        ...prev, stage1: { ...prev.stage1, [qId]: true }
-                    }));
-                } else if (currentAttempts >= 2) {
-                    setCompletedStages(prev => ({
-                        ...prev, stage1: { ...prev.stage1, [qId]: true }
-                    }));
+                    updateScore('stage1', 10, questions[currentQ].id);
+                } else {
+                    // 틀렸을 경우 점수 없이 완료 처리만 함 (기회 재부여 없음)
+                    updateScore('stage1', 0, questions[currentQ].id);
                 }
             };
 
             const handleNext = () => {
-                const isCorrect = selectedAnswer === questions[currentQ].correctAnswer;
-                const twoAttemptsFailed = attempts[questions[currentQ].id] >= 2 && !isCorrect;
-                if (isCorrect || twoAttemptsFailed) {
-                    if (currentQ < questions.length - 1) {
-                        setCurrentQ(currentQ + 1);
-                        setShowFeedback(false);
-                        setSelectedAnswer(null);
-                    } else {
-                        goToStage(2);
-                    }
-                } else {
+                if (currentQ < questions.length - 1) {
+                    setCurrentQ(currentQ + 1);
                     setShowFeedback(false);
                     setSelectedAnswer(null);
+                } else {
+                    goToStage(2);
                 }
             };
 
@@ -229,27 +225,20 @@
                     ) : (
                         <div className={`rounded-2xl p-6 mb-6 fade-in border-4 ${isCorrect ? 'bg-green-50 border-green-300' : 'bg-orange-50 border-orange-300 shake'}`}>
                             <div className="flex items-start mb-4">
-                                <div className="text-5xl mr-4">{isCorrect ? '🎉' : (attempts[q.id] >= 2 ? '😢' : '💭')}</div>
+                                <div className="text-5xl mr-4">{isCorrect ? '🎉' : '😢'}</div>
                                 <div className="flex-1">
                                     <h3 className={`text-2xl font-bold mb-3 ${isCorrect ? 'text-green-800' : 'text-orange-800'}`}>
-                                        {isCorrect ? '정답입니다!' : (attempts[q.id] >= 2 ? '아쉬워요!' : '다시 생각해봐요!')}
+                                        {isCorrect ? '정답입니다!' : '틀렸습니다!'}
                                     </h3>
                                     <p className="text-lg text-gray-700 leading-relaxed">{q.explanation[selectedAnswer]}</p>
-                                    {!isCorrect && attempts[q.id] >= 2 && (
-                                        <p className="mt-3 text-sm text-gray-600 bg-white bg-opacity-50 rounded-lg p-3">💡 2번의 기회를 모두 사용했어요.</p>
-                                    )}
                                 </div>
                             </div>
                         </div>
                     )}
-                    <div className="flex gap-4">
-                        {currentQ > 0 && (
-                            <button onClick={() => { setCurrentQ(currentQ - 1); setShowFeedback(false); setSelectedAnswer(null); }} className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-4 px-6 rounded-2xl transition-all">← 이전 문제</button>
-                        )}
+                    <div className="flex justify-center">
                         {showFeedback && (
-                            <button onClick={handleNext} className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xl font-bold py-4 px-8 rounded-2xl hover:shadow-2xl transform hover:scale-105 transition-all">
-                                {isCorrect ? (currentQ < questions.length - 1 ? '다음 문제 →' : '편향 찾기 시작! 🔍')
-                                : (attempts[q.id] >= 2 ? (currentQ < questions.length - 1 ? '다음 문제 →' : '편향 찾기 시작! 🔍') : '다시 도전하기 🔄')}
+                            <button onClick={handleNext} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xl font-bold py-4 px-8 rounded-2xl hover:shadow-2xl transform hover:scale-105 transition-all">
+                                {currentQ < questions.length - 1 ? '다음 문제 →' : '편향 찾기 시작! 🔍'}
                             </button>
                         )}
                     </div>
@@ -257,12 +246,10 @@
             );
         }
 
-        /* 2단계 수정: 힌트 버튼 위치를 질문 영역 내부 하단으로 이동 */
-        function Stage2({ goToStage, updateScore, completedStages, setCompletedStages }) {
+        function Stage2({ goToStage, updateScore, completedStages }) {
             const [currentCase, setCurrentCase] = useState(0);
             const [selectedImage, setSelectedImage] = useState(null);
             const [showFeedback, setShowFeedback] = useState(false);
-            const [attempts, setAttempts] = useState({});
             const [showHints, setShowHints] = useState(false);
 
             const cases = [
@@ -339,42 +326,25 @@
             ];
 
             const handleSelect = (image) => {
-                const caseId = cases[currentCase].id;
-                const currentAttempts = (attempts[caseId] || 0) + 1;
-                setAttempts(prev => ({ ...prev, [caseId]: currentAttempts }));
                 setSelectedImage(image);
                 setShowFeedback(true);
                 const isCorrect = !image.biased;
                 
                 if (isCorrect) {
-                    let points = 15;
-                    if (currentAttempts === 2) points = 10;
-                    updateScore('stage2', points);
-                    setCompletedStages(prev => ({
-                        ...prev, stage2: { ...prev.stage2, [caseId]: true }
-                    }));
-                } else if (currentAttempts >= 2) {
-                    setCompletedStages(prev => ({
-                        ...prev, stage2: { ...prev.stage2, [caseId]: true }
-                    }));
+                    updateScore('stage2', 15, cases[currentCase].id);
+                } else {
+                    updateScore('stage2', 0, cases[currentCase].id);
                 }
             };
 
             const handleNext = () => {
-                const isCorrect = !selectedImage.biased;
-                const twoAttemptsFailed = attempts[cases[currentCase].id] >= 2 && selectedImage.biased;
-                if (isCorrect || twoAttemptsFailed) {
-                    if (currentCase < cases.length - 1) {
-                        setCurrentCase(currentCase + 1);
-                        setSelectedImage(null);
-                        setShowFeedback(false);
-                        setShowHints(false);
-                    } else {
-                        goToStage(3);
-                    }
-                } else {
+                if (currentCase < cases.length - 1) {
+                    setCurrentCase(currentCase + 1);
                     setSelectedImage(null);
                     setShowFeedback(false);
+                    setShowHints(false);
+                } else {
+                    goToStage(3);
                 }
             };
 
@@ -387,7 +357,6 @@
                         <div className="inline-block bg-purple-100 text-purple-800 px-4 py-2 rounded-full font-bold mb-4">사례 {currentCase + 1} / {cases.length}</div>
                         <h2 className="text-3xl font-bold text-gray-800 mb-4">{c.title}</h2>
                     </div>
-                    {/* 질문 영역 수정: 힌트 버튼을 질문 아래로 배치 */}
                     <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 mb-8 border-2 border-purple-200 text-center">
                         <p className="text-2xl font-bold text-purple-700 mb-4">{c.question}</p>
                         {!showFeedback && (
@@ -420,30 +389,21 @@
                     ) : (
                         <div className={`rounded-3xl p-8 mb-8 fade-in border-4 ${selectedImage.biased ? 'bg-orange-50 border-orange-300 shake' : 'bg-green-50 border-green-300'}`}>
                             <div className="flex items-start mb-6">
-                                <div className="text-6xl mr-6">{selectedImage.biased ? (attempts[c.id] >= 2 ? '😢' : '🤔') : '🎉'}</div>
+                                <div className="text-6xl mr-6">{selectedImage.biased ? '😢' : '🎉'}</div>
                                 <div className="flex-1">
                                     <h3 className={`text-3xl font-bold mb-4 ${selectedImage.biased ? 'text-orange-800' : 'text-green-800'}`}>
-                                        {selectedImage.biased ? (attempts[c.id] >= 2 ? '아쉬워요!' : selectedImage.feedback.title) : selectedImage.feedback.title}
+                                        {selectedImage.feedback.title}
                                     </h3>
                                     <p className="text-xl font-bold mb-4">{selectedImage.feedback.reason}</p>
                                     <p className="text-lg mb-6">{selectedImage.feedback.explanation}</p>
-                                    {selectedImage.biased && attempts[c.id] >= 2 && (
-                                        <div className="bg-white rounded-2xl p-5 mt-4">
-                                            <p className="font-bold">💡 2번의 기회를 모두 사용했어요.</p>
-                                        </div>
-                                    )}
                                 </div>
                             </div>
                         </div>
                     )}
-                    <div className="flex gap-4">
-                        {currentCase > 0 && (
-                            <button onClick={() => { setCurrentCase(currentCase - 1); setSelectedImage(null); setShowFeedback(false); setShowHints(false); }} className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-4 px-6 rounded-2xl transition-all">← 이전 사례</button>
-                        )}
+                    <div className="flex justify-center">
                         {showFeedback && (
-                            <button onClick={handleNext} className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xl font-bold py-5 px-8 rounded-2xl hover:shadow-2xl transform hover:scale-105 transition-all">
-                                {!selectedImage.biased ? (currentCase < cases.length - 1 ? '다음 사례 →' : '핵심 정리 학습하기 📖')
-                                : (attempts[c.id] >= 2 ? (currentCase < cases.length - 1 ? '다음 사례 →' : '핵심 정리 학습하기 📖') : '다시 도전하기 🔄')}
+                            <button onClick={handleNext} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xl font-bold py-5 px-8 rounded-2xl hover:shadow-2xl transform hover:scale-105 transition-all">
+                                {currentCase < cases.length - 1 ? '다음 사례 →' : '핵심 정리 학습하기 📖'}
                             </button>
                         )}
                     </div>
@@ -451,11 +411,11 @@
             );
         }
 
-        /* 3단계 수정: 퀴즈 전 학습 페이지를 먼저 노출하는 로직 추가 */
-        function Stage3({ goToStage, updateScore, completedStages, setCompletedStages }) {
-            const [isLearning, setIsLearning] = useState(true); // 학습 중인지 여부 상태값
-            const [selected, setSelected] = useState({});
-            const [attempts, setAttempts] = useState({});
+        function Stage3({ goToStage, updateScore, completedStages }) {
+            const [isLearning, setIsLearning] = useState(true); 
+            const [currentQ, setCurrentQ] = useState(0);
+            const [selectedId, setSelectedId] = useState(null);
+            const [showFeedback, setShowFeedback] = useState(false);
 
             const questions = [
                 { id: 1, text: "AI가 공정하려면", explanation: "AI가 공정하려면 다양한 데이터를 균형있게 학습해야 해요.",
@@ -499,31 +459,58 @@
                     { id: 'b', text: "AI가 만든 이미지나 글의 편향성을 살펴본다", correct: true },
                     { id: 'c', text: "무조건 AI가 시키는 대로 행동한다", correct: false },
                     { id: 'd', text: "검증되지 않은 AI 결과를 그대로 공유한다", correct: false }
+                  ]},
+                { id: 7, text: "AI 편향 문제를 해결하기 위해 가장 필요한 가치는", explanation: "다양성을 존중하고 포용하는 가치가 공정한 AI 제작의 핵심입니다.",
+                  options: [
+                    { id: 'a', text: "효율성과 속도", correct: false },
+                    { id: 'b', text: "다양성과 포용성", correct: true },
+                    { id: 'c', text: "경쟁과 차별", correct: false },
+                    { id: 'd', text: "익명성과 폐쇄성", correct: false }
+                  ]},
+                { id: 8, text: "다음 중 '데이터 편향'을 방지하는 방법은", explanation: "특정 데이터만 모으지 않고 모든 집단의 정보를 고르게 수집해야 합니다.",
+                  options: [
+                    { id: 'a', text: "한 가지 인종의 사진만 대량으로 학습시킨다", correct: false },
+                    { id: 'b', text: "여러 인종과 성별의 정보를 고르게 수집한다", correct: true },
+                    { id: 'c', text: "인터넷에 가장 많은 자료만 사용한다", correct: false },
+                    { id: 'd', text: "데이터 수집을 중단한다", correct: false }
+                  ]},
+                { id: 9, text: "AI 결과를 비판적으로 본다는 것은 무슨 뜻인가요", explanation: "정보를 무조건 믿지 않고 의문을 가지며 다시 확인하는 태도입니다.",
+                  options: [
+                    { id: 'a', text: "AI를 전혀 믿지 않는 것", correct: false },
+                    { id: 'b', text: "AI가 제시한 정보에 오류나 편견이 없는지 살피는 것", correct: true },
+                    { id: 'c', text: "AI가 시키는 모든 것을 비난하는 것", correct: false },
+                    { id: 'd', text: "AI 사용자를 나쁘게 생각하는 것", correct: false }
+                  ]},
+                { id: 10, text: "공정한 AI 사회를 만들기 위해 누가 노력해야 하나요", explanation: "개발자뿐만 아니라 사용하는 우리 모두가 관심을 가져야 합니다.",
+                  options: [
+                    { id: 'a', text: "AI를 만드는 개발자만 노력하면 된다", correct: false },
+                    { id: 'b', text: "국가에서 법으로 강제하기만 하면 된다", correct: false },
+                    { id: 'c', text: "개발자와 사용자 등 우리 모두가 함께 노력해야 한다", correct: true },
+                    { id: 'd', text: "노력해도 소용없으므로 가만히 있는다", correct: false }
                   ]}
             ];
 
-            const handleChoice = (qId, opt) => {
-                setSelected(prev => ({ ...prev, [qId]: opt }));
-                const currentAttempts = (attempts[qId] || 0) + 1;
-                setAttempts(prev => ({ ...prev, [qId]: currentAttempts }));
+            const handleChoice = (opt) => {
+                setSelectedId(opt.id);
+                setShowFeedback(true);
                 
                 if (opt.correct) {
-                    let points = 10;
-                    if (currentAttempts === 2) points = 7;
-                    updateScore('stage3', points);
-                    setCompletedStages(prev => ({
-                        ...prev, stage3: { ...prev.stage3, [qId]: true }
-                    }));
-                } else if (currentAttempts >= 2) {
-                    setCompletedStages(prev => ({
-                        ...prev, stage3: { ...prev.stage3, [qId]: true }
-                    }));
+                    updateScore('stage3', 10, questions[currentQ].id);
+                } else {
+                    updateScore('stage3', 0, questions[currentQ].id);
                 }
             };
 
-            const allDone = Object.keys(completedStages.stage3).length === questions.length;
+            const handleNext = () => {
+                if (currentQ < questions.length - 1) {
+                    setCurrentQ(currentQ + 1);
+                    setSelectedId(null);
+                    setShowFeedback(false);
+                } else {
+                    goToStage(4);
+                }
+            };
 
-            // 3단계 신규 학습 페이지
             if (isLearning) {
                 return (
                     <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 fade-in">
@@ -532,7 +519,6 @@
                             <h2 className="text-3xl font-bold text-gray-800 mb-4">공정한 AI와 편향 알아보기</h2>
                             <p className="text-lg text-gray-600 mb-8">퀴즈를 풀기 전에 중요한 내용을 함께 정리해 볼까요?</p>
                         </div>
-                        
                         <div className="space-y-6 mb-10 text-left">
                             <div className="bg-purple-50 rounded-2xl p-6 border-l-8 border-purple-400">
                                 <h3 className="text-xl font-bold text-purple-800 mb-2">1. AI 편향이란 무엇인가요?</h3>
@@ -540,14 +526,12 @@
                                     AI가 특정 성별, 인종, 나이 등을 차별하거나 <strong>고정관념이 섞인 결과</strong>를 내놓는 것을 말해요. 이는 AI가 공부하는 '데이터'가 한쪽으로 치우쳐 있을 때 주로 발생합니다.
                                 </p>
                             </div>
-                            
                             <div className="bg-blue-50 rounded-2xl p-6 border-l-8 border-blue-400">
                                 <h3 className="text-xl font-bold text-blue-800 mb-2">2. 공정한 AI를 만들려면?</h3>
                                 <p className="text-gray-700 leading-relaxed">
                                     <strong>다양한 집단의 데이터</strong>를 골고루 수집해서 학습시켜야 해요. 또한 개발자들은 알고리즘이 누군가를 차별하지 않는지 <strong>주기적으로 점검</strong>하는 노력이 필요합니다.
                                 </p>
                             </div>
-
                             <div className="bg-green-50 rounded-2xl p-6 border-l-8 border-green-400">
                                 <h3 className="text-xl font-bold text-green-800 mb-2">3. 우리의 올바른 태도는?</h3>
                                 <p className="text-gray-700 leading-relaxed">
@@ -555,7 +539,6 @@
                                 </p>
                             </div>
                         </div>
-
                         <button onClick={() => setIsLearning(false)} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xl font-bold py-5 px-8 rounded-2xl hover:shadow-2xl transform hover:scale-105 transition-all">
                             학습 완료! 핵심 정리 퀴즈 풀기 📝
                         </button>
@@ -563,78 +546,60 @@
                 );
             }
 
-            // 기존 핵심 정리 퀴즈 화면
+            const q = questions[currentQ];
+            const isCorrect = q.options.find(o => o.id === selectedId)?.correct;
+
             return (
                 <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 fade-in">
                     <div className="text-center mb-8">
                         <div className="text-6xl mb-6">🎯</div>
                         <h2 className="text-3xl font-bold text-gray-800 mb-4">핵심 내용 정리하기</h2>
-                        <p className="text-lg text-gray-600">문장을 완성해보세요!</p>
                         <div className="mt-4 inline-block bg-purple-100 text-purple-800 px-6 py-2 rounded-full font-bold">
-                            완료: {Object.keys(completedStages.stage3).length} / {questions.length}
+                            문제 {currentQ + 1} / {questions.length}
                         </div>
                     </div>
-                    <div className="space-y-6 mb-8">
-                        {questions.map(q => (
-                            <div key={q.id} className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 border-2 border-purple-200">
-                                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-start">
-                                    <span className="text-2xl mr-3">{q.id}.</span>
-                                    <span>"{q.text}..."</span>
-                                    {completedStages.stage3[q.id] && <span className="ml-auto text-green-600 text-2xl">✓</span>}
-                                </h3>
-                                {selected[q.id] && !selected[q.id].correct && !completedStages.stage3[q.id] && (
-                                    <div className="mb-3 bg-orange-100 border-2 border-orange-300 rounded-lg p-3 text-orange-800">
-                                        <span className="font-bold">❌ 틀렸어요!</span> {attempts[q.id] >= 2 ? '2번의 기회를 모두 사용했어요.' : '다시 선택해주세요.'}
-                                    </div>
-                                )}
-                                {completedStages.stage3[q.id] && (
-                                    <div className={`mb-3 rounded-lg p-4 border-2 ${selected[q.id]?.correct ? 'bg-green-50 border-green-300' : 'bg-orange-50 border-orange-300'}`}>
-                                        <div className="flex items-start mb-2">
-                                            <span className="text-2xl mr-2">{selected[q.id]?.correct ? '🎉' : '😢'}</span>
-                                            <span className={`font-bold text-lg ${selected[q.id]?.correct ? 'text-green-800' : 'text-orange-800'}`}>
-                                                {selected[q.id]?.correct ? '정답입니다!' : '아쉬워요!'}
-                                            </span>
+                    
+                    <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-8 border-2 border-purple-200 mb-8">
+                        <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">"{q.text}..."</h3>
+                        <div className="space-y-4">
+                            {q.options.map(opt => (
+                                <button key={opt.id} onClick={() => !showFeedback && handleChoice(opt)} disabled={showFeedback}
+                                    className={`w-full text-left p-5 rounded-xl border-2 transition-all ${
+                                        showFeedback && opt.correct ? 'border-green-500 bg-green-50' :
+                                        showFeedback && selectedId === opt.id && !opt.correct ? 'border-red-500 bg-red-50' :
+                                        selectedId === opt.id ? 'border-purple-500 bg-purple-100' : 'border-gray-200 bg-white hover:border-purple-300'
+                                    }`}>
+                                    <div className="flex items-center">
+                                        <div className={`w-6 h-6 rounded-full border-2 mr-4 flex items-center justify-center ${
+                                            showFeedback && opt.correct ? 'bg-green-500 border-green-500' :
+                                            showFeedback && selectedId === opt.id && !opt.correct ? 'bg-red-500 border-red-500' :
+                                            selectedId === opt.id ? 'bg-purple-500 border-purple-500' : 'border-gray-300'
+                                        }`}>
+                                            {(selectedId === opt.id || (showFeedback && opt.correct)) && <span className="text-white text-xs">✓</span>}
                                         </div>
-                                        <p className="text-gray-700">{q.explanation}</p>
+                                        <span className="text-lg text-gray-700">{opt.text}</span>
                                     </div>
-                                )}
-                                <div className="space-y-3 ml-8">
-                                    {q.options.map(opt => {
-                                        const isSelected = selected[q.id]?.id === opt.id;
-                                        const isDone = completedStages.stage3[q.id];
-                                        const isWrong = isSelected && !opt.correct;
-                                        return (
-                                            <button key={opt.id} onClick={() => !isDone && handleChoice(q.id, opt)} disabled={isDone}
-                                                className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
-                                                    isSelected && isDone ? (opt.correct ? 'border-green-500 bg-green-100' : 'border-red-500 bg-red-100')
-                                                    : isWrong ? 'border-red-500 bg-red-100'
-                                                    : isSelected ? 'border-purple-500 bg-purple-100'
-                                                    : 'border-gray-300 bg-white hover:border-purple-300 hover:bg-purple-50'
-                                                } ${isDone ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
-                                                <div className="flex items-start">
-                                                    <div className={`w-6 h-6 rounded-full border-2 mr-3 flex items-center justify-center ${
-                                                        isSelected && isDone ? (opt.correct ? 'border-green-500 bg-green-500' : 'border-red-500 bg-red-500')
-                                                        : isWrong ? 'border-red-500 bg-red-500'
-                                                        : isSelected ? 'border-purple-500 bg-purple-500'
-                                                        : 'border-gray-400'
-                                                    }`}>
-                                                        {isSelected && <span className="text-white text-sm">{isDone ? (opt.correct ? '✓' : '✗') : '✓'}</span>}
-                                                    </div>
-                                                    <span className="text-gray-700 text-lg flex-1">{opt.text}</span>
-                                                </div>
-                                            </button>
-                                        );
-                                    })}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {showFeedback && (
+                        <div className={`rounded-2xl p-6 mb-8 border-4 fade-in ${isCorrect ? 'bg-green-50 border-green-300' : 'bg-orange-50 border-orange-300'}`}>
+                            <div className="flex items-center">
+                                <span className="text-4xl mr-4">{isCorrect ? '🎉' : '😢'}</span>
+                                <div>
+                                    <p className="font-bold text-lg mb-1">{isCorrect ? '정답입니다!' : '아쉽습니다!'}</p>
+                                    <p className="text-gray-700">{q.explanation}</p>
                                 </div>
                             </div>
-                        ))}
-                    </div>
-                    {allDone ? (
-                        <button onClick={() => goToStage(4)} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xl font-bold py-5 px-8 rounded-2xl hover:shadow-2xl transform hover:scale-105 transition-all">
-                            결과 확인 및 인증서 받기! 🎉
+                        </div>
+                    )}
+
+                    {showFeedback && (
+                        <button onClick={handleNext} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xl font-bold py-5 px-8 rounded-2xl hover:shadow-2xl transform hover:scale-105 transition-all">
+                            {currentQ < questions.length - 1 ? '다음 문제 →' : '결과 확인 및 인증서 받기! 🎉'}
                         </button>
-                    ) : (
-                        <div className="text-center text-gray-600">⬆️ 위의 문장들을 완성해주세요! (2번까지 도전할 수 있어요)</div>
                     )}
                 </div>
             );
@@ -662,8 +627,9 @@
             }, [allChecked, setAllStagesCompleted]);
 
             let level = '', emoji = '', rank = '', comment = '';
-            if (totalScore >= 210) { level = '셜록 홈즈급'; emoji = '🎩'; rank = 'MASTER'; comment = '마스터 탐정!'; }
-            else if (totalScore >= 160) { level = '명탐정급'; emoji = '🧐'; rank = 'EXPERT'; comment = '숙련 탐정!'; }
+            // 총점 기준 상향 조정 (300점 만점)
+            if (totalScore >= 250) { level = '셜록 홈즈급'; emoji = '🎩'; rank = 'MASTER'; comment = '마스터 탐정!'; }
+            else if (totalScore >= 180) { level = '명탐정급'; emoji = '🧐'; rank = 'EXPERT'; comment = '숙련 탐정!'; }
             else { level = '신참 탐정급'; emoji = '🔍'; rank = 'ROOKIE'; comment = '견습 탐정!'; }
 
             const downloadCert = () => {
@@ -709,57 +675,42 @@
                         )}
                     </div>
                     <div ref={certRef} className="bg-gradient-to-br from-purple-50 via-white to-pink-50 rounded-3xl p-10 mb-8 border-4 border-purple-300 shadow-2xl">
-                        <div className="text-6xl mb-4">{emoji}</div>
-                        <h3 className="text-3xl font-bold text-purple-800 mb-4">AI 편향 탐정단 인증서</h3>
+                        <div className="text-center">
+                            <div className="text-6xl mb-4">{emoji}</div>
+                            <h3 className="text-3xl font-bold text-purple-800 mb-4">AI 편향 탐정단 인증서</h3>
+                        </div>
                         <div className="bg-white bg-opacity-60 rounded-2xl p-8">
-                            <p className="text-gray-700 text-lg mb-6">이 인증서는 다음 사람이</p>
+                            <p className="text-gray-700 text-lg mb-6 text-center">이 인증서는 다음 사람이</p>
                             <div className="bg-yellow-100 border-2 border-yellow-400 rounded-xl p-4 mb-6">
                                 <input type="text" placeholder="여기에 이름을 입력하세요" className="text-2xl font-bold text-center w-full bg-transparent border-none outline-none" />
                             </div>
-                            <p className="text-gray-700 text-lg mb-4">AI 편향에 대한 이해와 비판적 사고 능력을<br/>성공적으로 함양했음을 증명합니다.</p>
+                            <p className="text-gray-700 text-lg mb-4 text-center">AI 편향에 대한 이해와 비판적 사고 능력을<br/>성공적으로 함양했음을 증명합니다.</p>
                             <div className="grid grid-cols-3 gap-4 my-6 text-sm">
                                 {[
                                     { title: '1단계', score: scores.stage1, max: STAGE1_MAX },
                                     { title: '2단계', score: scores.stage2, max: STAGE2_MAX },
                                     { title: '3단계', score: scores.stage3, max: STAGE3_MAX }
                                 ].map((s, i) => (
-                                    <div key={i} className="bg-purple-50 rounded-lg p-3">
+                                    <div key={i} className="bg-purple-50 rounded-lg p-3 text-center">
                                         <div className="font-bold text-purple-800 mb-1">{s.title}</div>
                                         <div className="text-2xl font-bold text-purple-600">{s.score}</div>
                                         <div className="text-xs text-gray-600">/ {s.max}점</div>
                                     </div>
                                 ))}
                             </div>
-                            <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl p-6 mb-4">
+                            <div className="bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl p-6 mb-4 text-center">
                                 <div className="text-sm text-gray-600 mb-2">최종 점수</div>
                                 <div className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">{totalScore}점</div>
                                 <div className="text-sm text-gray-600 mt-1">/ {MAX_SCORE}점</div>
                             </div>
-                            <div className="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-4">
+                            <div className="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-4 text-center">
                                 <div className="text-sm text-yellow-800 mb-1">탐정 레벨</div>
                                 <div className="text-3xl font-bold text-yellow-700 mb-1">{level}</div>
                                 <div className="inline-block bg-yellow-200 px-3 py-1 rounded-full text-xs font-bold text-yellow-800 mb-2">{rank}</div>
                                 <div className="text-sm text-yellow-700">{comment}</div>
                             </div>
                         </div>
-                        <p className="text-gray-500 text-sm mt-4">{new Date().toLocaleDateString('ko-KR')}</p>
-                    </div>
-                    <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl p-6 mb-6 border-2 border-amber-200">
-                        <h3 className="text-xl font-bold text-amber-800 mb-4">🏅 탐정 레벨 기준</h3>
-                        <div className="grid md:grid-cols-3 gap-4 text-left">
-                            {[
-                                { e: '🎩', n: '셜록 홈즈급', r: 'MASTER', s: '210점 이상', h: totalScore >= 210 },
-                                { e: '🧐', n: '명탐정급', r: 'EXPERT', s: '160-209점', h: totalScore >= 160 && totalScore < 210 },
-                                { e: '🔍', n: '신참 탐정급', r: 'ROOKIE', s: '159점 이하', h: totalScore < 160 }
-                            ].map((l, i) => (
-                                <div key={i} className={`bg-white rounded-xl p-4 border-2 ${l.h ? 'border-amber-400 shadow-lg' : 'border-gray-200'}`}>
-                                    <div className="text-3xl mb-2">{l.e}</div>
-                                    <div className="font-bold text-gray-800 mb-1">{l.n}</div>
-                                    <div className="text-sm font-bold mb-2" style={{color: i === 0 ? '#d97706' : i === 1 ? '#2563eb' : '#16a34a'}}>{l.r}</div>
-                                    <div className="text-xs text-gray-600">{l.s}</div>
-                                </div>
-                            ))}
-                        </div>
+                        <p className="text-gray-500 text-sm mt-4 text-center">{new Date().toLocaleDateString('ko-KR')}</p>
                     </div>
                     <button onClick={downloadCert} className="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white text-xl font-bold py-5 px-8 rounded-2xl hover:shadow-2xl transform hover:scale-105 transition-all">
                         📥 인증서 다운로드하기
