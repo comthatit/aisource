@@ -25,7 +25,6 @@
     <script type="text/babel">
         const { useState, useRef, useEffect } = React;
         
-        // 수정된 점수 체계 상숫값
         const MAX_SCORE = 300; 
         const STAGE1_MAX = 50; 
         const STAGE2_MAX = 150;
@@ -40,10 +39,10 @@
             const [allStagesCompleted, setAllStagesCompleted] = useState(false);
             const totalScore = scores.stage1 + scores.stage2 + scores.stage3;
             
-            // 점수 부여 여부 확인 로직 (이미 완료된 문항은 점수 미부여)
+            // 수정된 점수 업데이트 로직: 이미 푼 문제는 무조건 점수 반영 안 함
             const updateScore = (stageKey, points, qId) => {
                 setCompletedStages(prev => {
-                    if (prev[stageKey][qId]) return prev; // 이미 푼 문제면 점수 반영 안함
+                    if (prev[stageKey] && prev[stageKey][qId] !== undefined) return prev; 
                     
                     setScores(sPrev => ({ ...sPrev, [stageKey]: sPrev[stageKey] + points }));
                     return {
@@ -64,9 +63,9 @@
             ];
             const CurrentComponent = stages[stage].component;
 
-            const stage1Done = Object.keys(completedStages.stage1).length === 5; // 5문제
+            const stage1Done = Object.keys(completedStages.stage1).length === 5;
             const stage2Done = Object.keys(completedStages.stage2).length === 10;
-            const stage3Done = Object.keys(completedStages.stage3).length === 10; // 10문제
+            const stage3Done = Object.keys(completedStages.stage3).length === 10;
 
             return (
                 <div className="min-h-screen py-8 px-4">
@@ -91,14 +90,16 @@
                                             const stageNum = idx + 1;
                                             const isCurrentStage = stageNum === stage;
                                             const isCompleted = (stageNum === 1 && stage1Done) || (stageNum === 2 && stage2Done) || (stageNum === 3 && stage3Done) || (stageNum === 4 && allStagesCompleted);
-                                            const canAccess = stageNum <= stage || allStagesCompleted;
+                                            
+                                            // 수정된 네비게이션 로직: 완료했거나, 현재 단계보다 이전이거나, 최종 완료 상태면 상시 접근 가능
+                                            const canAccess = allStagesCompleted || stageNum <= stage || isCompleted;
                                             
                                             return (
                                                 <button key={idx} onClick={() => goToStage(stageNum)}
                                                     disabled={!canAccess}
                                                     className={`flex flex-col items-center px-3 py-2 rounded-xl transition-all duration-300 ${
                                                         isCurrentStage ? 'bg-purple-500 text-white scale-110'
-                                                        : isCompleted ? 'bg-lime-400 text-white hover:scale-105'
+                                                        : canAccess ? 'bg-lime-400 text-white hover:scale-105'
                                                         : 'bg-white bg-opacity-30 text-white opacity-50 cursor-not-allowed'
                                                     }`}>
                                                     <div className="text-xl mb-1">
@@ -184,7 +185,6 @@
                 if (isCorrect) {
                     updateScore('stage1', 10, questions[currentQ].id);
                 } else {
-                    // 틀렸을 경우 점수 없이 완료 처리만 함 (기회 재부여 없음)
                     updateScore('stage1', 0, questions[currentQ].id);
                 }
             };
@@ -288,7 +288,7 @@
                     { id: 'B', visual: '👩🏻👨🏽👩🏼', detail: '동양인 여성, 흑인 남성, 백인 여성', biased: false,
                       feedback: { title: '공정해요! ✨', reason: '성별과 인종의 조화', explanation: '누구나 리더가 될 수 있는 다양성을 보여줍니다.' }}
                   ]},
-                { id: 6, title: "AI가 그린 '가사 노동하는 사람'", emoji: "🧹", question: "편향이 없는 공정한 그림은?",
+                { id: 6, title: "AI가 그린 '가사 노동하는 person'", emoji: "🧹", question: "편향이 없는 공정한 그림은?",
                   images: [
                     { id: 'A', visual: '👩🏻👩🏼👩🏽', detail: '여러 인종의 여성들', biased: true,
                       feedback: { title: '편향이 있어요! 🚨', reason: '성별 고정관념', explanation: '집안일은 여성만 한다는 편견이 반영되었습니다.' }},
@@ -627,7 +627,6 @@
             }, [allChecked, setAllStagesCompleted]);
 
             let level = '', emoji = '', rank = '', comment = '';
-            // 총점 기준 상향 조정 (300점 만점)
             if (totalScore >= 250) { level = '셜록 홈즈급'; emoji = '🎩'; rank = 'MASTER'; comment = '마스터 탐정!'; }
             else if (totalScore >= 180) { level = '명탐정급'; emoji = '🧐'; rank = 'EXPERT'; comment = '숙련 탐정!'; }
             else { level = '신참 탐정급'; emoji = '🔍'; rank = 'ROOKIE'; comment = '견습 탐정!'; }
