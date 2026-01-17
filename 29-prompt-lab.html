@@ -36,13 +36,19 @@
         function PromptLab() {
             const [stage, setStage] = useState(0);
             const [totalScore, setTotalScore] = useState(0);
+            // 문제를 푼 기록을 저장하여 중복 점수 방지
+            const [solvedQuestions, setSolvedQuestions] = useState(new Set());
             const [completedStages, setCompletedStages] = useState({
                 stage1: false, stage2: false, stage3: false, stage4: false
             });
             const [allStagesCompleted, setAllStagesCompleted] = useState(false);
             
-            const updateScore = (points) => {
-                setTotalScore(prev => prev + points);
+            // 중복 방지 로직이 포함된 점수 업데이트 함수
+            const updateScore = (points, questionId) => {
+                if (!solvedQuestions.has(questionId)) {
+                    setTotalScore(prev => prev + points);
+                    setSolvedQuestions(prev => new Set(prev).add(questionId));
+                }
             };
             
             const goToStage = (stageNum) => setStage(stageNum);
@@ -84,14 +90,15 @@
                                             const stageNum = idx + 1;
                                             const isCurrentStage = stageNum === stage;
                                             const isCompleted = completedStages[`stage${stageNum}`] || (stageNum === 5 && allStagesCompleted);
-                                            const canAccess = stageNum <= stage || allStagesCompleted;
+                                            // 수정: 이미 완료했거나 현재 단계보다 이전 단계라면 언제든 이동 가능
+                                            const canAccess = stageNum <= stage || isCompleted || allStagesCompleted;
                                             
                                             return (
                                                 <button key={idx} onClick={() => goToStage(stageNum)}
                                                     disabled={!canAccess}
                                                     className={`flex flex-col items-center px-2 py-2 rounded-xl transition-all duration-300 ${
-                                                        isCurrentStage ? 'bg-purple-500 text-white scale-110'
-                                                        : isCompleted ? 'bg-lime-400 text-white hover:scale-105'
+                                                        isCurrentStage ? 'bg-purple-500 text-white scale-110 shadow-lg'
+                                                        : canAccess ? 'bg-lime-400 text-white hover:scale-105'
                                                         : 'bg-white bg-opacity-30 text-white opacity-50 cursor-not-allowed'
                                                     }`}>
                                                     <div className="text-lg mb-1">
@@ -109,6 +116,7 @@
                             goToStage={goToStage} 
                             updateScore={updateScore} 
                             totalScore={totalScore}
+                            solvedQuestions={solvedQuestions}
                             markStageComplete={markStageComplete}
                             setAllStagesCompleted={setAllStagesCompleted}
                         />
@@ -412,10 +420,11 @@
             };
 
             const handleNext = () => {
-                setCurrentComparison(prev => prev + 1);
-                setDisplayedResult({ p1: "", p2: "" });
-                setSelectedSide(null);
-                if (currentComparison >= comparisons.length - 1) {
+                if (currentComparison < comparisons.length - 1) {
+                    setCurrentComparison(prev => prev + 1);
+                    setDisplayedResult({ p1: "", p2: "" });
+                    setSelectedSide(null);
+                } else {
                     markStageComplete('stage2');
                     goToStage(3);
                 }
@@ -642,10 +651,10 @@
                     )}
 
                     <div className="flex flex-col space-y-4">
-                        {/* 요청하신 대로 분석 포인트 보기 버튼을 여기로 옮겼습니다 */}
-                        <div className="flex justify-end">
+                        {/* 분석 포인트 보기 버튼: 크기 확대, 가운데 정렬, 위치 유지 */}
+                        <div className="flex justify-center w-full">
                             <button onClick={() => setShowAnalysis(!showAnalysis)}
-                                className="text-sm font-bold text-green-700 hover:underline bg-green-50 px-3 py-1 rounded-lg border border-green-200">
+                                className="w-full md:w-2/3 py-4 text-lg font-black text-green-800 bg-green-100 hover:bg-green-200 rounded-2xl border-2 border-green-400 shadow-md transition-all transform hover:scale-102">
                                 {showAnalysis ? '설명 닫기 ✖' : '분석 포인트 보기 🔍'}
                             </button>
                         </div>
@@ -669,11 +678,10 @@
             );
         }
 
-        function Stage4({ goToStage, updateScore, markStageComplete }) {
+        function Stage4({ goToStage, updateScore, solvedQuestions, markStageComplete }) {
             const [currentQuestion, setCurrentQuestion] = useState(0);
             const [selectedAnswer, setSelectedAnswer] = useState(null);
             const [showFeedback, setShowFeedback] = useState(false);
-            const [earnedScore, setEarnedScore] = useState(0);
 
             const questions = [
                 {
@@ -807,8 +815,8 @@
 
                 const option = currentQ.options.find(o => o.id === optionId);
                 if (option.correct) {
-                    updateScore(currentQ.points);
-                    setEarnedScore(prev => prev + currentQ.points);
+                    // 상위 updateScore를 통해 중복 체크 후 점수 합산
+                    updateScore(currentQ.points, currentQ.id);
                 }
             };
 
@@ -836,9 +844,6 @@
                             ))}
                         </div>
                         <p className="text-gray-600">문제 {currentQuestion + 1} / {questions.length}</p>
-                        <div className="mt-4 inline-block bg-purple-100 px-4 py-2 rounded-full">
-                            <p className="text-purple-800 font-bold">획득 점수: {earnedScore}점 / {MAX_SCORE}점</p>
-                        </div>
                     </div>
 
                     <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6 mb-6 border-2 border-blue-200">
