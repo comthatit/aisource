@@ -22,6 +22,9 @@
         @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
         .typing-cursor { border-right: 2px solid #667eea; animation: blink 0.7s infinite; }
         @keyframes blink { 50% { border-color: transparent; } }
+        
+        .content-card-enter { animation: contentEnter 0.4s ease-out; }
+        @keyframes contentEnter { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 <body>
@@ -172,76 +175,96 @@
 
         function Stage1({ goToStage, markStageComplete }) {
             const [currentQuestion, setCurrentQuestion] = useState(0);
+            const [isAnimating, setIsAnimating] = useState(false);
 
             const contents = [
                 {
                     id: 'c1',
                     title: '프롬프트(Prompt)란?',
                     emoji: '💬',
-                    explanation: 'AI에게 주는 명령문이나 질문을 "프롬프트"라고 합니다. 마치 요리사에게 요리법을 설명하는 것처럼, AI에게 무엇을 어떻게 해달라고 요청하는 것이 프롬프트예요.',
-                    examples: [
-                        '"고양이를 그려줘"',
-                        '"여행 계획을 세워줘"',
-                        '"파이썬 코드를 작성해줘"'
-                    ]
+                    explanation: 'AI에게 내리는 모든 명령이나 질문을 뜻해요. 마치 우리가 친구에게 "떡볶이 먹으러 갈래?"라고 묻거나, 요리사에게 "스테이크는 미디엄으로 구워주세요"라고 주문하는 것과 같아요.',
+                    keyPoint: '프롬프트는 AI를 움직이게 하는 "시작 신호"입니다.'
                 },
                 {
                     id: 'c2',
-                    title: '프롬프트의 중요성',
-                    emoji: '⭐',
-                    explanation: '같은 AI라도 프롬프트가 다르면 완전히 다른 결과를 만들어냅니다. 프롬프트는 AI와 대화하는 언어이자, 원하는 결과를 얻는 열쇠예요.',
-                    keyPoint: '프롬프트 = AI의 입력 / AI 답변 = 출력'
+                    title: '프롬프트의 작동 원리',
+                    emoji: '⚙️',
+                    explanation: 'AI는 마법 상자가 아니에요! 여러분이 입력한 프롬프트의 단어와 문맥을 분석해서, 다음에 올 확률이 가장 높은 답변을 계산해서 내놓는 것이랍니다.',
+                    keyPoint: '질문이 정확할수록 AI의 계산도 정확해집니다.'
                 },
                 {
                     id: 'c3',
-                    title: '좋은 프롬프트의 첫걸음',
+                    title: '왜 프롬프트가 중요할까요?',
+                    emoji: '⭐',
+                    explanation: '똑같은 AI라도 "웃긴 이야기 해줘"와 "5살 아이가 깔깔 웃을만한 짧은 동물 이야기 해줘"의 답변은 완전히 다릅니다. 여러분의 실력에 따라 AI는 천재가 될 수도 있고, 바보가 될 수도 있어요!',
+                    keyPoint: '프롬프트 = AI의 지능을 이끌어내는 열쇠'
+                },
+                {
+                    id: 'c4',
+                    title: '좋은 프롬프트의 3요소',
                     emoji: '🎯',
-                    explanation: '좋은 프롬프트는 명확하고 구체적입니다. "그림 그려줘"보다는 "해변에서 일몰을 보는 고양이를 그려줘"가 훨씬 좋은 프롬프트예요.',
+                    explanation: '더 좋은 답변을 얻으려면 다음 3가지를 기억하세요! 1. 역할(누가 답변할지), 2. 배경(어떤 상황인지), 3. 지시(무엇을 해야 하는지)입니다.',
+                    examples: [
+                        '"너는 여행 가이드야(역할). 제주도에 2박 3일로 갈 거야(배경). 맛집 위주로 일정을 짜줘(지시)."'
+                    ]
+                },
+                {
+                    id: 'c5',
+                    title: '나쁜 프롬프트 vs 좋은 프롬프트',
+                    emoji: '⚖️',
+                    explanation: '모호한 표현보다는 구체적인 숫자가 들어간 표현이 좋습니다. "많이" 보다는 "3가지", "빨리" 보다는 "1분 안에"처럼 말이죠.',
                     comparison: {
-                        bad: '❌ 모호한 프롬프트: "음식 추천해줘"',
-                        good: '✅ 좋은 프롬프트: "매운 음식을 좋아하는 사람을 위한 한식 추천해줘"'
+                        bad: '❌ "공부 잘하는 법 알려줘"',
+                        good: '✅ "중학생이 영어 단어를 효율적으로 외울 수 있는 방법 3가지를 단계별로 설명해줘"'
                     }
                 }
             ];
 
-            const currentContent = contents[currentQuestion];
-
             const handleNext = () => {
                 if (currentQuestion < contents.length - 1) {
-                    setCurrentQuestion(currentQuestion + 1);
+                    setIsAnimating(true);
+                    setTimeout(() => {
+                        setCurrentQuestion(currentQuestion + 1);
+                        setIsAnimating(false);
+                    }, 300);
                 } else {
                     markStageComplete('stage1');
                     goToStage(2);
                 }
             };
 
+            const currentContent = contents[currentQuestion];
+
             return (
                 <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 fade-in">
                     <div className="text-center mb-8">
-                        <div className="text-6xl mb-6 bounce">{currentContent.emoji}</div>
+                        <div className={`text-6xl mb-6 transition-transform duration-300 ${isAnimating ? 'scale-0' : 'scale-100 bounce'}`}>
+                            {currentContent.emoji}
+                        </div>
                         <h2 className="text-3xl font-bold text-gray-800 mb-4">1단계: 프롬프트란 무엇일까?</h2>
                         <div className="flex justify-center gap-2 mb-4">
                             {contents.map((_, idx) => (
-                                <div key={idx} className={`w-3 h-3 rounded-full ${idx === currentQuestion ? 'bg-blue-500' : idx < currentQuestion ? 'bg-green-500' : 'bg-gray-300'}`} />
+                                <button key={idx} onClick={() => setCurrentQuestion(idx)} 
+                                    className={`w-3 h-3 rounded-full transition-all ${idx === currentQuestion ? 'bg-blue-500 scale-125' : idx < currentQuestion ? 'bg-green-500' : 'bg-gray-300'}`} />
                             ))}
                         </div>
                         <p className="text-gray-600">{currentQuestion + 1} / {contents.length}</p>
                     </div>
 
-                    <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-8 mb-8 border-2 border-blue-200">
+                    <div className={`bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-8 mb-8 border-2 border-blue-200 min-h-[300px] flex flex-col justify-center transition-all duration-300 ${isAnimating ? 'opacity-0 transform -translate-x-10' : 'opacity-100 transform translate-x-0'}`}>
                         <h3 className="text-2xl font-bold text-blue-800 mb-6 text-center">{currentContent.title}</h3>
                         
-                        <div className="bg-white rounded-xl p-6 mb-6">
+                        <div className="bg-white rounded-xl p-6 mb-6 shadow-sm">
                             <p className="text-gray-800 text-lg leading-relaxed">{currentContent.explanation}</p>
                         </div>
 
                         {currentContent.examples && (
-                            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-5 mb-4">
+                            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-5 mb-4 slide-in">
                                 <p className="font-bold text-purple-800 mb-3">📝 프롬프트 예시:</p>
                                 <div className="space-y-2">
                                     {currentContent.examples.map((ex, idx) => (
                                         <div key={idx} className="bg-white rounded-lg p-3 border-l-4 border-purple-500">
-                                            <p className="text-gray-700">{ex}</p>
+                                            <p className="text-gray-700 font-medium">{ex}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -249,18 +272,18 @@
                         )}
 
                         {currentContent.keyPoint && (
-                            <div className="bg-yellow-50 rounded-xl p-5 border-2 border-yellow-300">
-                                <p className="text-yellow-900 font-bold text-center text-lg">💡 {currentContent.keyPoint}</p>
+                            <div className="bg-yellow-50 rounded-xl p-5 border-2 border-yellow-300 slide-in">
+                                <p className="text-yellow-900 font-bold text-center text-lg">💡 핵심: {currentContent.keyPoint}</p>
                             </div>
                         )}
 
                         {currentContent.comparison && (
-                            <div className="space-y-3">
+                            <div className="space-y-3 slide-in">
                                 <div className="bg-red-50 rounded-xl p-4 border-l-4 border-red-400">
                                     <p className="text-gray-800">{currentContent.comparison.bad}</p>
                                 </div>
                                 <div className="bg-green-50 rounded-xl p-4 border-l-4 border-green-400">
-                                    <p className="text-gray-800">{currentContent.comparison.good}</p>
+                                    <p className="text-gray-800 font-bold">{currentContent.comparison.good}</p>
                                 </div>
                             </div>
                         )}
@@ -268,7 +291,7 @@
 
                     <button onClick={handleNext}
                         className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xl font-bold py-5 px-8 rounded-2xl hover:shadow-2xl transform hover:scale-105 transition-all">
-                        {currentQuestion < contents.length - 1 ? '다음 ➜' : '2단계로 이동 ➜'}
+                        {currentQuestion < contents.length - 1 ? '다음 학습 내용 ➜' : '실험실로 입장 ➜'}
                     </button>
                 </div>
             );
@@ -316,6 +339,51 @@
                         { text: '감기 때문에 결석하게 된 상황을 담아 담임 선생님께 정중한 결석 사유 이메일을 작성해줘. 오늘 날짜를 포함해줘.', style: '비즈니스 매너', result: '제목: [결석계] 1월 13일 OOO 학생 사유서\n\n존경하는 선생님께,\n안녕하세요, OOO입니다. 다름이 아니오라 갑작스러운 독감 증세로 인해 부득이하게 오늘(13일) 수업에 참석하지 못하게 되었습니다. 빠른 시일 내에 회복하여 등교하겠습니다.' }
                     ],
                     explanation: '상황(감기)과 태도(정중함)를 설정하자 상황에 딱 맞는 이메일 초안이 완성되었습니다.'
+                },
+                {
+                    id: 'c5',
+                    topic: '창의적 요리 아이디어',
+                    prompts: [
+                        { text: '남은 치킨 활용법', style: '단순 질문', result: '1. 치킨 마요 덮밥을 만드세요.\n2. 잘게 찢어 샐러드에 넣으세요.\n3. 치킨 샌드위치를 만드세요.' },
+                        { text: '너는 퓨전 요리 전문가야. 먹다 남은 양념치킨을 활용해서 10분 만에 만들 수 있는 고급 레스토랑 스타일의 안주 레시피를 이름까지 지어서 제안해줘.', style: '페르소나 부여', result: '🍽️ 요리명: [스파이시 양념 퀘사디아]\n안녕하세요, 퓨전 셰프입니다! 남은 치킨의 변신입니다.\n1. 또띠아에 치킨을 찢어 올리고 모짜렐라 치즈를 듬뿍 얹으세요.\n2. 프라이팬에 앞뒤로 바삭하게 굽습니다.\n3. 꿀을 살짝 찍어 드시면 레스토랑 부럽지 않은 안주가 완성됩니다!' }
+                    ],
+                    explanation: '전문가 역할을 부여하고 요리 이름까지 요청하니 훨씬 창의적이고 완성도 높은 제안을 해줍니다.'
+                },
+                {
+                    id: 'c6',
+                    topic: '방대한 정보 요약',
+                    prompts: [
+                        { text: '이 기사 요약해줘: [기사내용]', style: '단순 요약', result: '이 기사는 최근 인공지능 기술의 발전이 우리 사회의 일자리와 교육 환경에 미치는 영향에 대해 다루고 있습니다.' },
+                        { text: '초등학생 뉴스 앵커처럼, 다음 기사 내용을 친구들이 이해하기 쉽게 3가지 핵심 포인트로 요약하고 "오늘의 한마디"를 덧붙여줘: [기사내용]', style: '형식 지정', result: '🎤 어린이 여러분 안녕하세요! 오늘의 뉴스입니다!\n1. AI가 우리 선생님이 될 수도 있대요!\n2. 이제 학교에서 코딩 공부가 더 중요해져요.\n3. 하지만 AI는 우리의 창의력은 못 따라와요.\n🌟 오늘의 한마디: "무서워 말고 AI와 친해져 봐요!"' }
+                    ],
+                    explanation: '요약의 대상과 개수, 그리고 마무리 문구까지 지정하니 출력 형식이 훨씬 보기 좋아졌습니다.'
+                },
+                {
+                    id: 'c7',
+                    topic: '창의적 글쓰기',
+                    prompts: [
+                        { text: '우주 여행 이야기 써줘', style: '단순 지시', result: '한 소년이 우주선을 타고 화성에 갔습니다. 그곳에서 외계인을 만났고 친구가 되었습니다. 소년은 지구로 돌아와 사람들에게 우주의 신비를 전했습니다.' },
+                        { text: '판타지 동화 작가처럼, 고양이가 마법사가 되어 달나라로 여행을 떠나는 짧은 이야기를 써줘. 반전이 하나 있어야 하고, 마지막은 교훈적인 문장으로 끝나야 해.', style: '제약조건 추가', result: '🐈 냐옹이는 평범한 고양이가 아니었어요. 꼬리를 휘두르면 별 가루가 쏟아졌죠! 그는 낡은 빗자루를 타고 달나라로 날아갔습니다. 그런데 알고 보니 달은 치즈가 아니라 잠자는 거대한 달토끼의 엉덩이였어요! 냐옹이는 깜짝 놀라 도망쳤지만, 덕분에 새로운 모험을 배웠죠. "호기심은 때로 엉덩이처럼 큰 교훈을 줍니다."' }
+                    ],
+                    explanation: '이야기의 구성 요소(반전, 교훈)를 넣으니 훨씬 흥미진진한 스토리가 만들어집니다.'
+                },
+                {
+                    id: 'c8',
+                    topic: '데이터 시각화 준비',
+                    prompts: [
+                        { text: '한국, 일본, 중국의 수도와 인구 알려줘', style: '정보 검색', result: '한국의 수도는 서울(940만), 일본은 도쿄(1,390만), 중국은 베이징(2,180만)입니다.' },
+                        { text: '한국, 일본, 중국의 수도, 인구, 대표 음식을 조사해서 마크다운 표(Table) 형식으로 정리해줘. 인구가 많은 순서대로 나열해줘.', style: '출력 형식 지정', result: '| 순위 | 국가 | 수도 | 인구 | 대표 음식 |\n|---|---|---|---|---|\n| 1 | 중국 | 베이징 | 2,180만 | 북경오리 |\n| 2 | 일본 | 도쿄 | 1,390만 | 초밥 |\n| 3 | 한국 | 서울 | 940만 | 비빔밥 |' }
+                    ],
+                    explanation: '데이터를 표 형식으로 정리해달라고 요청하면 우리가 따로 정리할 필요가 없어집니다.'
+                },
+                {
+                    id: 'c9',
+                    topic: '학습 및 개념 설명',
+                    prompts: [
+                        { text: '광합성이 뭐야?', style: '단순 질문', result: '광합성은 식물이 빛 에너지를 이용하여 이산화탄소와 물로부터 유기물을 합성하는 과정입니다.' },
+                        { text: '광합성의 원리를 "햇빛 요리사"라는 비유를 들어서 7세 어린이가 이해할 수 있도록 아주 쉽게 설명해줘.', style: '비유 활용', result: '🌿 나무와 꽃들은 "햇빛 요리사"예요! 잎사귀라는 작은 프라이팬에 햇빛 양념과 공기 가루, 물 소금을 넣어서 맛있는 간식을 직접 만든답니다. 이 간식을 먹고 무럭무럭 자라는 과정을 광합성이라고 불러요!' }
+                    ],
+                    explanation: '비유와 대상을 특정하면 어려운 과학 개념도 훨씬 직관적으로 이해할 수 있습니다.'
                 }
             ];
 
@@ -436,31 +504,59 @@
         function Stage3({ goToStage, markStageComplete }) {
             const [activeTab, setActiveTab] = useState(0);
             const [showAnalysis, setShowAnalysis] = useState(false);
+            const [showSampleResponse, setShowSampleResponse] = useState(false);
+            const [showBadSample, setShowBadSample] = useState(false);
 
             const analysisData = [
                 {
-                    title: "구체적인 페르소나",
+                    title: "역할 부여",
                     icon: "👤",
                     bad: "운동 가르쳐줘",
+                    badSample: "운동에는 유산소와 근력 운동이 있습니다. 걷기, 달리기, 스쿼트 등을 해보세요.",
                     good: "너는 10년 경력의 베테랑 헬스 트레이너야. 집에서 도구 없이 할 수 있는 초보자용 하체 루틴을 짜줘.",
                     points: ["역할 부여 (트레이너)", "도구 제약 (맨몸)", "수준 지정 (초보자)"],
-                    lesson: "AI에게 '누가' 되어야 하는지 알려주면 훨씬 전문적인 답변을 얻을 수 있어요."
+                    lesson: "AI에게 '누가' 되어야 하는지 알려주면 훨씬 전문적인 답변을 얻을 수 있어요.",
+                    sample: "안녕하세요! 여러분의 건강을 책임질 10년차 트레이너입니다. 오늘은 거실에서도 충분히 가능한 '맨몸 스쿼트'와 '런지' 루틴을 준비했습니다. 초보자분들을 위해 관절에 무리 가지 않는 자세부터 알려드릴게요!"
                 },
                 {
-                    title: "명확한 출력 형식",
+                    title: "출력 형식",
                     icon: "📋",
                     bad: "책 추천해줘",
-                    good: "베스트셀러 인문학 도서 3권을 추천해줘. [제목 / 저자 / 핵심내용 한 줄 요약] 형식으로 표 형태로 정리해줘.",
-                    points: ["수량 한정 (3권)", "장르 지정 (인문학)", "형식 지정 (표, 한 줄 요약)"],
-                    lesson: "원하는 답변의 모양을 미리 정해주면 정리할 필요 없이 바로 사용할 수 있어요."
+                    badSample: "최근 인기 있는 책으로는 사피엔스, 미움받을 용기, 정의란 무엇인가 등이 있습니다.",
+                    good: "베스트셀러 인문학 도서 3권을 추천해줘. [제목 / 저자 / 한 줄 요약] 형식으로 표 형태로 정리해줘.",
+                    points: ["수량 한정 (3권)", "장르 지정 (인문학)", "형식 지정 (표 정리)"],
+                    lesson: "원하는 답변의 모양을 미리 정해주면 정리할 필요 없이 바로 사용할 수 있어요.",
+                    sample: "| 제목 | 저자 | 한 줄 요약 |\n|---|---|---|\n| 사피엔스 | 유발 하라리 | 인류가 어떻게 지구의 주인이 되었는지 분석한 명저 |\n| 미움받을 용기 | 기시미 이치로 | 아들러 심리학을 통해 행복의 해답을 제시하는 책 |\n| 정의란 무엇인가 | 마이클 샌델 | 현대 사회의 다양한 갈등을 정의의 관점에서 조명함 |"
                 },
                 {
-                    title: "단계별 사고 유도",
+                    title: "단계별 사고",
                     icon: "⛓️",
                     bad: "수학 문제 풀어줘",
+                    badSample: "정답은 9π입니다.",
                     good: "이 문제를 단계별로 생각해서 풀어보자. 먼저 공식을 설명하고, 그다음 숫자를 대입해서 계산 과정을 보여줘.",
                     points: ["사고 방식 유도 (단계별)", "구성 요소 (공식 → 계산)", "논리성 강화"],
-                    lesson: "복잡한 문제는 '단계별로 생각하라'는 문구만으로도 정답률이 훨씬 올라갑니다."
+                    lesson: "복잡한 문제는 '단계별로 생각하라'는 문구만으로도 정답률이 훨씬 올라갑니다.",
+                    sample: "네, 함께 차근차근 풀어볼까요? \n1단계(공식): 원의 넓이는 $S = \pi r^2$입니다. \n2단계(대입): 반지름 $r$이 3이므로 $3^2$은 9입니다. \n3단계(결과): 따라서 정답은 $9\pi$입니다."
+                },
+                {
+                    title: "제약 조건",
+                    icon: "🚫",
+                    bad: "여행지 추천해줘",
+                    badSample: "강원도의 정동진 해변이나 속초 해수욕장을 추천합니다. 바다가 아주 아름다워요.",
+                    good: "강원도 여행지를 추천해주되, 바닷가는 제외해줘. 조용한 산책로 위주로 5곳만 추천해줘.",
+                    points: ["위치 특정 (강원도)", "부정적 제약 (바다 제외)", "수량 및 테마 (5곳, 산책)"],
+                    lesson: "하기 싫은 것(제약 조건)을 미리 말하면 시행착오를 줄일 수 있습니다.",
+                    sample: "바다를 제외한 강원도의 보석 같은 산책로 5곳입니다. 1. 평창 월정사 전나무숲길, 2. 인제 원대리 자작나무 숲, 3. 춘천 제이드가든, 4. 원주 소금산 그랜드밸리(산책코스), 5. 영월 선암마을 뗊목마을 산책로입니다."
+                },
+                {
+                    title: "예시 제공",
+                    icon: "💡",
+                    bad: "단어장 만들어줘",
+                    badSample: "Apple: 사과, Banana: 바나나, Grape: 포도...",
+                    good: "영어 단어와 뜻을 정리해줘. 예시: [Apple - 사과]. 이런 형식으로 과일 이름 5개 써줘.",
+                    points: ["작업 내용 명시", "예시 패턴 제공 (Apple-사과)", "수량 제한 (5개)"],
+                    lesson: "원하는 예시(Example)를 한두 개만 보여줘도 AI는 완벽하게 따라합니다.",
+                    sample: "제시해주신 형식대로 정리한 과일 단어 5개입니다.\n1. [Banana - 바나나]\n2. [Grape - 포도]\n3. [Orange - 오렌지]\n4. [Strawberry - 딸기]\n5. [Watermelon - 수박]"
                 }
             ];
 
@@ -474,39 +570,55 @@
                         <p className="text-gray-600">작은 차이가 완벽한 답변을 만듭니다.</p>
                     </div>
 
-                    <div className="flex flex-wrap justify-center gap-4 mb-8">
-                        {analysisData.map((item, idx) => (
-                            <button key={idx} onClick={() => {setActiveTab(idx); setShowAnalysis(false);}}
-                                className={`px-6 py-3 rounded-full font-bold transition-all ${
-                                    activeTab === idx ? 'bg-purple-600 text-white shadow-lg scale-105' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                                }`}>
-                                {item.icon} {item.title}
-                            </button>
-                        ))}
+                    <div className="flex justify-center mb-8 overflow-x-auto pb-2">
+                        <div className="flex space-x-2 min-w-max px-4">
+                            {analysisData.map((item, idx) => (
+                                <button key={idx} onClick={() => {setActiveTab(idx); setShowAnalysis(false); setShowSampleResponse(false); setShowBadSample(false);}}
+                                    className={`px-4 py-2 rounded-full font-bold transition-all text-sm ${
+                                        activeTab === idx ? 'bg-purple-600 text-white shadow-lg scale-105' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                    }`}>
+                                    {item.icon} {item.title}
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-8 mb-8">
-                        <div className="bg-red-50 rounded-2xl p-6 border-t-8 border-red-400 shadow-sm">
+                        <div className="bg-red-50 rounded-2xl p-6 border-t-8 border-red-400 shadow-sm relative">
                             <h4 className="font-bold text-red-800 text-lg mb-4 flex items-center">
                                 <span className="mr-2">❌</span> Before (일반 프롬프트)
                             </h4>
-                            <div className="bg-white p-4 rounded-xl border border-red-200 min-h-[100px] flex items-center">
+                            <div className="bg-white p-4 rounded-xl border border-red-200 min-h-[100px] flex items-center mb-4">
                                 <p className="text-gray-700 italic">"{current.bad}"</p>
                             </div>
+                            <button onClick={() => setShowBadSample(!showBadSample)}
+                                className="text-xs font-bold text-red-700 bg-red-100 px-2 py-1 rounded hover:bg-red-200 transition-colors">
+                                {showBadSample ? '답변 닫기 ✖' : '일반 답변 예시 보기 👁️'}
+                            </button>
+                            {showBadSample && (
+                                <div className="mt-3 bg-white p-3 rounded-lg text-xs text-gray-600 border border-red-100 slide-in">
+                                    {current.badSample}
+                                </div>
+                            )}
                         </div>
                         <div className="bg-green-50 rounded-2xl p-6 border-t-8 border-green-400 shadow-sm relative">
                             <h4 className="font-bold text-green-800 text-lg mb-4 flex items-center">
                                 <span className="mr-2">✅</span> After (업그레이드 프롬프트)
                             </h4>
-                            <div className="bg-white p-4 rounded-xl border border-green-200 min-h-[100px] flex items-center">
+                            <div className="bg-white p-4 rounded-xl border border-green-200 min-h-[100px] flex items-center mb-4">
                                 <p className="text-gray-800 font-bold">"{current.good}"</p>
                             </div>
-                            <div className="mt-4 flex justify-end">
-                                <button onClick={() => setShowAnalysis(true)}
-                                    className="text-sm font-bold text-green-700 hover:underline">
-                                    업그레이드 포인트 보기 🔍
+                            <div className="flex justify-between items-center">
+                                <button onClick={() => setShowSampleResponse(!showSampleResponse)}
+                                    className="text-xs font-bold text-purple-700 bg-purple-100 px-2 py-1 rounded hover:bg-purple-200 transition-colors">
+                                    {showSampleResponse ? '답변 닫기 ✖' : '업그레이드 답변 예시 보기 👁️'}
                                 </button>
                             </div>
+                            {showSampleResponse && (
+                                <div className="mt-3 bg-white p-3 rounded-lg text-xs text-gray-600 border border-green-100 whitespace-pre-line slide-in">
+                                    {current.sample}
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -517,7 +629,7 @@
                                 {current.points.map((p, i) => (
                                     <div key={i} className="bg-white p-4 rounded-xl shadow-sm border-b-4 border-blue-400">
                                         <span className="text-blue-600 font-black text-lg mr-2">#{i+1}</span>
-                                        <span className="text-gray-700 font-bold">{p}</span>
+                                        <span className="text-gray-700 font-bold text-sm">{p}</span>
                                     </div>
                                 ))}
                             </div>
@@ -530,10 +642,20 @@
                     )}
 
                     <div className="flex flex-col space-y-4">
+                        {/* 요청하신 대로 분석 포인트 보기 버튼을 여기로 옮겼습니다 */}
+                        <div className="flex justify-end">
+                            <button onClick={() => setShowAnalysis(!showAnalysis)}
+                                className="text-sm font-bold text-green-700 hover:underline bg-green-50 px-3 py-1 rounded-lg border border-green-200">
+                                {showAnalysis ? '설명 닫기 ✖' : '분석 포인트 보기 🔍'}
+                            </button>
+                        </div>
+
                         <button onClick={() => {
                             if (activeTab < analysisData.length - 1) {
                                 setActiveTab(prev => prev + 1);
                                 setShowAnalysis(false);
+                                setShowSampleResponse(false);
+                                setShowBadSample(false);
                             } else {
                                 markStageComplete('stage3');
                                 goToStage(4);
@@ -564,55 +686,115 @@
                         { id: 'd', text: 'AI가 생성한 최종 결과물이다', correct: false }
                     ],
                     explanation: '프롬프트는 AI에게 주는 명령문이나 질문입니다. 우리가 AI에게 무엇을 요청하는지 알려주는 입력값이에요!',
-                    points: 20
+                    points: 10
                 },
                 {
                     id: 'q2',
-                    question: '다음 중 더 좋은 프롬프트는?',
+                    question: '다음 중 가장 좋은 프롬프트는?',
                     options: [
                         { id: 'a', text: '요리 알려줘', correct: false },
                         { id: 'b', text: '초보자도 30분 안에 만들 수 있는 간단한 파스타 레시피 알려줘', correct: true },
-                        { id: 'c', text: '파스타', correct: false },
+                        { id: 'c', text: '파스타 만드는 법', correct: false },
                         { id: 'd', text: '맛있는 거 알려줘', correct: false }
                     ],
                     explanation: '좋은 프롬프트는 대상(초보자), 시간(30분), 난이도(간단한), 음식 종류(파스타)를 구체적으로 명시합니다!',
-                    points: 20
+                    points: 10
                 },
                 {
                     id: 'q3',
-                    question: '프롬프트가 중요한 이유는?',
+                    question: '프롬프트의 결과가 마음에 들지 않을 때 가장 적절한 행동은?',
                     options: [
-                        { id: 'a', text: 'AI의 학습 속도를 높여주기 때문', correct: false },
-                        { id: 'b', text: '프롬프트에 따라 AI의 답변이 달라지기 때문', correct: true },
-                        { id: 'c', text: 'AI를 더 빠르게 만들기 때문', correct: false },
-                        { id: 'd', text: 'AI의 메모리를 절약하기 때문', correct: false }
+                        { id: 'a', text: 'AI가 고장 났다고 생각하고 포기한다', correct: false },
+                        { id: 'b', text: '같은 질문을 계속 반복해서 물어본다', correct: false },
+                        { id: 'c', text: '제약 조건이나 형식을 추가해 구체적으로 수정한다', correct: true },
+                        { id: 'd', text: '질문 없이 AI가 스스로 알아낼 때까지 기다린다', correct: false }
                     ],
-                    explanation: '같은 AI라도 프롬프트가 다르면 완전히 다른 결과를 만듭니다. 프롬프트는 AI와 대화하는 언어예요!',
-                    points: 20
+                    explanation: 'AI는 지시에 따라 움직입니다. 답변이 부족하면 프롬프트를 개선(엔지니어링)해야 합니다.',
+                    points: 10
                 },
                 {
                     id: 'q4',
-                    question: '좋은 프롬프트의 조건이 아닌 것은?',
+                    question: '프롬프트에 "너는 10년차 전문 상담가야"라고 적는 기법의 이름은?',
                     options: [
-                        { id: 'a', text: '명확하고 구체적이어야 한다', correct: false },
-                        { id: 'b', text: '원하는 결과의 형식을 지정한다', correct: false },
-                        { id: 'c', text: '가능한 한 짧고 간단해야 한다', correct: true },
-                        { id: 'd', text: '필요한 조건과 제약을 명시한다', correct: false }
+                        { id: 'a', text: '데이터 입력', correct: false },
+                        { id: 'b', text: '역할 부여(Persona)', correct: true },
+                        { id: 'c', text: '제약 조건 설정', correct: false },
+                        { id: 'd', text: '단계별 사고', correct: false }
                     ],
-                    explanation: '프롬프트는 짧은 것보다 명확하고 구체적인 것이 중요합니다. 필요한 정보는 충분히 제공해야 해요!',
-                    points: 20
+                    explanation: 'AI에게 특정한 역할(누구인지)을 부여하면 그 분야에 적합한 전문적인 말투와 지식을 제공합니다.',
+                    points: 10
                 },
                 {
                     id: 'q5',
-                    question: 'AI의 답변이 마음에 들지 않을 때 가장 적절한 행동은?',
+                    question: '정보를 깔끔하게 정리하고 싶을 때 프롬프트에 추가하기 좋은 문구는?',
                     options: [
-                        { id: 'a', text: '포기하고 다른 일을 한다', correct: false },
-                        { id: 'b', text: '같은 질문을 반복한다', correct: false },
-                        { id: 'c', text: '프롬프트를 더 구체적으로 수정해서 다시 질문한다', correct: true },
-                        { id: 'd', text: 'AI가 잘못됐다고 생각한다', correct: false }
+                        { id: 'a', text: '아무렇게나 말해줘', correct: false },
+                        { id: 'b', text: '표(Table) 형식으로 정리해줘', correct: true },
+                        { id: 'c', text: '최대한 길게 설명해줘', correct: false },
+                        { id: 'd', text: '비밀스럽게 알려줘', correct: false }
                     ],
-                    explanation: 'AI는 우리가 주는 지시를 따를 뿐입니다. 답변이 부족하다면 프롬프트를 개선해야 해요!',
-                    points: 20
+                    explanation: '출력 형식을 지정(표, 리스트 등)하면 데이터를 다시 정리하는 수고를 덜 수 있습니다.',
+                    points: 10
+                },
+                {
+                    id: 'q6',
+                    question: '복잡한 수학 문제를 풀게 할 때 정답률을 높이는 방법으로 가장 적절한 것은?',
+                    options: [
+                        { id: 'a', text: '"빨리 풀어줘"라고 독촉한다', correct: false },
+                        { id: 'b', text: '"단계별로 차근차근 생각해봐"라고 지시한다', correct: true },
+                        { id: 'c', text: '"틀리면 안 돼"라고 겁을 준다', correct: false },
+                        { id: 'd', text: '질문을 한 번에 여러 개 섞어서 한다', correct: false }
+                    ],
+                    explanation: '논리적인 추론이 필요한 경우 "단계별로 생각하라"는 지시가 AI의 논리적 사고를 돕습니다.',
+                    points: 10
+                },
+                {
+                    id: 'q7',
+                    question: '프롬프트 작성 시 "바닷가는 제외해줘"와 같은 지시의 역할은?',
+                    options: [
+                        { id: 'a', text: '역할 부여', correct: false },
+                        { id: 'b', text: '예시 제공', correct: false },
+                        { id: 'c', text: '제약 조건(Constraint) 설정', correct: true },
+                        { id: 'd', text: '단계별 사고', correct: false }
+                    ],
+                    explanation: '원하지 않는 것을 미리 명시(제약 조건)하면 시행착오를 줄이고 원하는 결과에 더 가까워집니다.',
+                    points: 10
+                },
+                {
+                    id: 'q8',
+                    question: 'AI에게 내가 원하는 출력 스타일을 학습시키기 위해 좋은 방법은?',
+                    options: [
+                        { id: 'a', text: '예시(Example)를 한두 개 보여준다', correct: true },
+                        { id: 'b', text: 'AI에게 알아서 공부하라고 한다', correct: false },
+                        { id: 'c', text: '질문을 아주 짧게 한다', correct: false },
+                        { id: 'd', text: '영어로만 질문한다', correct: false }
+                    ],
+                    explanation: '퓨샷(Few-shot) 기법처럼 원하는 형태의 예시를 제공하면 AI가 패턴을 완벽히 따라합니다.',
+                    points: 10
+                },
+                {
+                    id: 'q9',
+                    question: '다음 중 "구체적인 숫자"를 활용한 좋은 프롬프트는?',
+                    options: [
+                        { id: 'a', text: '책을 많이 추천해줘', correct: false },
+                        { id: 'b', text: '베스트셀러 인문학 도서 3권을 추천해줘', correct: true },
+                        { id: 'c', text: '인기 있는 책을 빨리 알려줘', correct: false },
+                        { id: 'd', text: '사람들이 읽는 책을 정리해줘', correct: false }
+                    ],
+                    explanation: '모호한 표현(많이, 빨리)보다 구체적인 숫자(3권)를 쓰면 AI가 더 정확한 양의 결과물을 줍니다.',
+                    points: 10
+                },
+                {
+                    id: 'q10',
+                    question: '프롬프트 실험실에서 배운 내용 중 "좋은 프롬프트"가 아닌 특징은?',
+                    options: [
+                        { id: 'a', text: '대상과 목적이 분명하다', correct: false },
+                        { id: 'b', text: '역할과 상황 배경이 포함되어 있다', correct: false },
+                        { id: 'c', text: '명령어가 가능한 한 짧고 모호하다', correct: true },
+                        { id: 'd', text: '원하는 출력 형식과 제약이 명시되어 있다', correct: false }
+                    ],
+                    explanation: '프롬프트는 짧은 것보다 명확하고 구체적인 것이 핵심입니다. 필요한 정보는 충분히 제공해야 합니다.',
+                    points: 10
                 }
             ];
 
@@ -725,6 +907,7 @@
 
         function Stage5({ totalScore, setAllStagesCompleted }) {
             const certRef = useRef(null);
+            const [userName, setUserName] = useState("");
             const [checkedItems, setCheckedItems] = useState({});
 
             const keyLearnings = [
@@ -766,7 +949,12 @@
             else { level = '프롬프트 학습자'; emoji = '🌱'; rank = 'BEGINNER'; comment = '좋은 시작!'; }
 
             const downloadCert = () => {
-                html2canvas(certRef.current, { scale: 2, backgroundColor: '#ffffff' }).then(canvas => {
+                html2canvas(certRef.current, { 
+                    scale: 2, 
+                    backgroundColor: '#ffffff',
+                    useCORS: true,
+                    logging: false
+                }).then(canvas => {
                     const link = document.createElement('a');
                     link.download = '프롬프트실험실_인증서.png';
                     link.href = canvas.toDataURL();
@@ -809,18 +997,26 @@
                         )}
                     </div>
 
-                    <div ref={certRef} className="bg-gradient-to-br from-blue-50 via-white to-purple-50 rounded-3xl p-10 mb-8 border-4 border-blue-300 shadow-2xl">
+                    <div ref={certRef} className="bg-gradient-to-br from-blue-50 via-white to-purple-50 rounded-3xl p-10 mb-8 border-4 border-blue-300 shadow-2xl text-center">
                         <div className="text-6xl mb-4">{emoji}</div>
                         <h3 className="text-3xl font-bold text-blue-800 mb-4">프롬프트 실험실 인증서</h3>
                         <div className="bg-white bg-opacity-60 rounded-2xl p-8">
                             <p className="text-gray-700 text-lg mb-6">이 인증서는 다음 사람이</p>
                             <div className="bg-yellow-100 border-2 border-yellow-400 rounded-xl p-4 mb-6">
-                                <input type="text" placeholder="여기에 이름을 입력하세요" className="text-2xl font-bold text-center w-full bg-transparent border-none outline-none" />
+                                <input 
+                                    type="text" 
+                                    value={userName}
+                                    onChange={(e) => setUserName(e.target.value)}
+                                    placeholder="이름을 입력하세요" 
+                                    className="text-2xl font-bold text-center w-full bg-transparent border-none outline-none text-gray-800" 
+                                />
                             </div>
                             <p className="text-gray-700 text-lg mb-4">프롬프트의 개념과 활용법을<br/>성공적으로 학습했음을 증명합니다.</p>
                             <div className="bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl p-6 mb-4">
                                 <div className="text-sm text-gray-600 mb-2">최종 점수</div>
-                                <div className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">{totalScore}점</div>
+                                <div className="text-5xl font-bold text-purple-700">
+                                    {totalScore}점
+                                </div>
                                 <div className="text-sm text-gray-600 mt-1">/ {MAX_SCORE}점</div>
                             </div>
                             <div className="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-4">
