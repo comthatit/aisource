@@ -169,11 +169,11 @@
                   explanation: { O: "정답이에요! 능력에 따라 다른 기회를 주는 것은 공정할 수 있어요.", X: "아쉬워요. 이건 공정해요! 성적이라는 객관적 기준으로 선발했기 때문이에요." }},
                 { id: 2, emoji: "⚽", situation: "축구팀 주장 선거에서 남학생만 후보로\n등록할 수 있다고 합니다.", question: "이것은 공정한가요?", correctAnswer: "X",
                   explanation: { O: "아쉬워요. 이건 불공정해요! 성별로 기회를 제한하는 것은 차별이에요.", X: "정답이에요! 성별로 기회를 제한하는 것은 불공정해요." }},
-                { id: 3, emoji: "🎨", situation: "미술 대회에서 심사위원이 자신이 좋아하는\n스타일의 그림에만 높은 점수를 줍니다.", question: "이것은 공정한가요?", correctAnswer: "X",
+                { id: 3, emoji: "🎨", situation: "미술 대회에서 심사위원이 자신이 개인적으로\n좋아하는 스타일의 그림에만 높은 점수를 줍니다.", question: "이것은 공정한가요?", correctAnswer: "X",
                   explanation: { O: "아쉬워요. 이건 불공정해요! 개인적인 취향만으로 평가하면 안 돼요.", X: "정답이에요! 개인 취향만으로 평가하는 것은 불공정해요." }},
-                { id: 4, emoji: "🦽", situation: "시험 시간에 장애가 있는 학생에게만\n추가 시간을 더 줍니다.", question: "이것은 공정한가요?", correctAnswer: "O",
+                { id: 4, emoji: "🦽", situation: "시험 시간에 장애가 있는 학생에게\n추가 시간을 더 줍니다.", question: "이것은 공정한가요?", correctAnswer: "O",
                   explanation: { O: "정답이에요! 장애로 인한 불리함을 보완해주는 것은 '형평성'이에요.", X: "아쉬워요. 장애로 인한 불리함을 보완해주는 것은 진정한 공정함을 위해 필요해요." }},
-                { id: 5, emoji: "🥪", situation: "급식 시간에 배가 더 고픈 사람에게만\n음식을 훨씬 더 많이 나누어 줍니다.", question: "이것은 공정한가요?", correctAnswer: "X",
+                { id: 5, emoji: "🥪", situation: "급식 시간에 목말라 보이는 학생에게만\n음료수를 2개씩 나누어 줍니다.", question: "이것은 공정한가요?", correctAnswer: "X",
                   explanation: { O: "아쉬워요. 주관적인 이유로 배분을 다르게 하는 것은 규칙상 불공정할 수 있어요.", X: "정답이에요! 모든 사람에게 정해진 규칙대로 배분하는 것이 기본입니다." }}
             ];
 
@@ -281,42 +281,42 @@
                     { id: 'B', visual: '👨🏻‍🏫👩🏽‍🏫👨🏾‍🏫', detail: '백인 남성, 흑인 여성, 흑인 남성', biased: false,
                       feedback: { title: '공정해요! 🌍', reason: '다양하게 표현했어요', explanation: '선생님은 누구나 될 수 있어요.' }}
                   ]},
-                { id: 5, title: "AI가 그린 'CEO(최고경영자)'", emoji: "👔", question: "편향이 없는 공정한 그림은?",
+                { id: 5, title: "AI가 그린 'CEO(최고경영자)' 그림", emoji: "👔", question: "편향이 없는 공정한 그림은?",
                   images: [
                     { id: 'A', visual: '👴🏻👴🏼👴🏽', detail: '중장년 남성들', biased: true,
                       feedback: { title: '편향이 있어요! 🚨', reason: '나이와 성별의 고정관념', explanation: 'CEO는 젊을 수도, 여성일 수도 있습니다.' }},
                     { id: 'B', visual: '👩🏻👨🏽👩🏼', detail: '동양인 여성, 흑인 남성, 백인 여성', biased: false,
                       feedback: { title: '공정해요! ✨', reason: '성별과 인종의 조화', explanation: '누구나 리더가 될 수 있는 다양성을 보여줍니다.' }}
                   ]},
-                { id: 6, title: "AI가 그린 '가사 노동하는 person'", emoji: "🧹", question: "편향이 없는 공정한 그림은?",
+                { id: 6, title: "AI가 그린 '가사 노동하는 사람' 그림", emoji: "🧹", question: "편향이 없는 공정한 그림은?",
                   images: [
                     { id: 'A', visual: '👩🏻👩🏼👩🏽', detail: '여러 인종의 여성들', biased: true,
                       feedback: { title: '편향이 있어요! 🚨', reason: '성별 고정관념', explanation: '집안일은 여성만 한다는 편견이 반영되었습니다.' }},
                     { id: 'B', visual: '👨🏻👩🏽👨🏾', detail: '여러 인종의 남성과 여성', biased: false,
                       feedback: { title: '공정해요! 🏠', reason: '성별 역할 탈피', explanation: '가사 노동은 성별에 관계없이 함께 하는 일입니다.' }}
                   ]},
-                { id: 7, title: "AI가 그린 '과학자'", emoji: "🔬", question: "편향이 없는 공정한 그림은?",
+                { id: 7, title: "AI가 그린 '과학자' 그림", emoji: "🔬", question: "편향이 없는 공정한 그림은?",
                   images: [
                     { id: 'A', visual: '👨🏻‍🔬👩🏼‍🔬👨🏾‍🔬', detail: '다양한 성별과 인종', biased: false,
                       feedback: { title: '공정해요! 🧪', reason: '다양한 연구자들', explanation: '전 세계의 다양한 사람들이 과학 발전에 기여합니다.' }},
                     { id: 'B', visual: '👨🏻‍🔬👨🏻‍🔬👨🏾‍🔬', detail: '다양한 인종', biased: true,
                       feedback: { title: '편향이 있어요! 🚨', reason: '이미지의 정형화', explanation: '과학자에 대한 특정 성별의 편견이 담겼습니다.' }}
                   ]},
-                { id: 8, title: "AI가 그린 '육아하는 모습'", emoji: "🍼", question: "편향이 없는 공정한 그림은?",
+                { id: 8, title: "AI가 그린 '육아하는 사람' 그림", emoji: "🍼", question: "편향이 없는 공정한 그림은?",
                   images: [
                     { id: 'A', visual: '👩🏻👩🏻👩🏻', detail: '아이를 돌보는 엄마들', biased: true,
                       feedback: { title: '편향이 있어요! 🚨', reason: '부모 역할의 편중', explanation: '아빠들도 육아에 적극적으로 참여합니다.' }},
                     { id: 'B', visual: '👨🏻👩🏼👨🏾', detail: '아이를 돌보는 아빠와 엄마', biased: false,
                       feedback: { title: '공정해요! ❤️', reason: '공동 육아의 모습', explanation: '육아의 주체는 성별에 국한되지 않습니다.' }}
                   ]},
-                { id: 9, title: "AI가 그린 '운동 선수'", emoji: "🏃", question: "편향이 없는 공정한 그림은?",
+                { id: 9, title: "AI가 그린 '운동 선수' 그림", emoji: "🏃", question: "편향이 없는 공정한 그림은?",
                   images: [
                     { id: 'A', visual: '🏃‍♂️🏃‍♀️👩🏼‍🦽', detail: '남녀 선수와 휠체어 선수', biased: false,
                       feedback: { title: '공정해요! 🥇', reason: '신체적 조건의 다양성', explanation: '장애 유무와 관계없이 누구나 스포츠를 즐깁니다.' }},
                     { id: 'B', visual: '🏃‍♂️🏃‍♂️🏃‍♂️', detail: '근육질의 남성 선수들', biased: true,
                       feedback: { title: '편향이 있어요! 🚨', reason: '신체 및 성별 편향', explanation: '여성 선수나 파라 선수의 모습이 빠져있습니다.' }}
                   ]},
-                { id: 10, title: "AI가 그린 '세계의 어린이'", emoji: "🧒", question: "편향이 없는 공정한 그림은?",
+                { id: 10, title: "AI가 그린 '세계의 어린이' 그림", emoji: "🧒", question: "편향이 없는 공정한 그림은?",
                   images: [
                     { id: 'A', visual: '👧🏼👦🏼👧🏼', detail: '금발의 백인 아이들', biased: true,
                       feedback: { title: '편향이 있어요! 🚨', reason: '특정 지역 편중', explanation: '지구촌에는 훨씬 더 다양한 모습의 아이들이 살고 있습니다.' }},
@@ -420,45 +420,45 @@
             const questions = [
                 { id: 1, text: "AI가 공정하려면", explanation: "AI가 공정하려면 다양한 데이터를 균형있게 학습해야 해요.",
                   options: [
-                    { id: 'a', text: "다양한 데이터를 균형있게 학습해야 한다", correct: true },
-                    { id: 'b', text: "많은 사람들이 좋아하는 결과만 만들어야 한다", correct: false },
-                    { id: 'c', text: "최대한 빠르게 답변을 생성해야 한다", correct: false },
-                    { id: 'd', text: "개발자의 의견만 반영해야 한다", correct: false }
+                    { id: 'a', text: "다양한 데이터를 균형있게 학습해야 한다.", correct: true },
+                    { id: 'b', text: "많은 사람들이 좋아하는 결과를 만들어야 한다.", correct: false },
+                    { id: 'c', text: "최대한 빠르게 답변을 생성해야 한다.", correct: false },
+                    { id: 'd', text: "개발자의 의견만 반영해야 한다.", correct: false }
                   ]},
                 { id: 2, text: "AI 편향이 생기는 주된 이유는", explanation: "AI 편향은 학습 데이터가 특정 집단에 편중되어 있을 때 발생해요.",
                   options: [
-                    { id: 'a', text: "AI가 일부러 차별하려고 해서이다", correct: false },
-                    { id: 'b', text: "학습 데이터가 특정 집단에 편중되어 있어서이다", correct: true },
-                    { id: 'c', text: "AI가 너무 복잡한 알고리즘을 사용해서이다", correct: false },
-                    { id: 'd', text: "AI의 처리 속도가 느려서이다", correct: false }
+                    { id: 'a', text: "AI가 도덕적 판단을 하기 때문이다.", correct: false },
+                    { id: 'b', text: "학습 데이터가 특정 집단에 편중되어 있기 때문이다.", correct: true },
+                    { id: 'c', text: "AI가 너무 복잡한 알고리즘을 사용하기 때문이다.", correct: false },
+                    { id: 'd', text: "AI의 처리 속도가 느리기 때문이다.", correct: false }
                   ]},
                 { id: 3, text: "편향된 AI를 발견했을 때 우리가 취해야 할 태도는", explanation: "편향을 인식하고 비판적으로 사고해야 해요.",
                   options: [
-                    { id: 'a', text: "AI의 결과를 무조건 믿고 따라야 한다", correct: false },
-                    { id: 'b', text: "편향을 인식하고 비판적으로 사고해야 한다", correct: true },
-                    { id: 'c', text: "AI 사용을 전면 금지해야 한다", correct: false },
-                    { id: 'd', text: "아무 조치도 취하지 않고 무시해야 한다", correct: false }
+                    { id: 'a', text: "AI의 결과를 믿고 따라야 한다.", correct: false },
+                    { id: 'b', text: "편향을 인식하고 비판적으로 사고해야 한다.", correct: true },
+                    { id: 'c', text: "AI 사용을 전면 금지해야 한다.", correct: false },
+                    { id: 'd', text: "AI의 판단이므로 인간은 개입하지 않아야 한다.", correct: false }
                   ]},
                 { id: 4, text: "공정한 AI를 만들기 위해 가장 중요한 것은", explanation: "다양한 집단의 데이터를 균형있게 수집하는 것이 중요해요.",
                   options: [
-                    { id: 'a', text: "AI 개발 속도를 높이는 것이다", correct: false },
-                    { id: 'b', text: "최신 기술만 사용하는 것이다", correct: false },
-                    { id: 'c', text: "다양한 집단의 데이터를 균형있게 수집하는 것이다", correct: true },
-                    { id: 'd', text: "AI를 가능한 한 적게 사용하는 것이다", correct: false }
+                    { id: 'a', text: "AI 개발 속도를 높이는 것이다.", correct: false },
+                    { id: 'b', text: "최신 기술을 사용하는 것이다.", correct: false },
+                    { id: 'c', text: "다양한 집단의 데이터를 균형있게 수집하는 것이다.", correct: true },
+                    { id: 'd', text: "AI를 가능한 한 적게 사용하는 것이다.", correct: false }
                   ]},
                 { id: 5, text: "AI의 편향을 줄이기 위한 개발자의 노력으로 옳은 것은", explanation: "알고리즘이 특정 집단에 유리하게 작동하지 않는지 계속 점검해야 합니다.",
                   options: [
-                    { id: 'a', text: "성능 향상을 위해 편향을 무시한다", correct: false },
-                    { id: 'b', text: "알고리즘의 공정성을 주기적으로 점검한다", correct: true },
-                    { id: 'c', text: "사용자가 원하는 편향된 결과만 제공한다", correct: false },
-                    { id: 'd', text: "데이터 수집 과정을 비밀로 유지한다", correct: false }
+                    { id: 'a', text: "성능 향상을 위해 편향을 무시한다.", correct: false },
+                    { id: 'b', text: "알고리즘의 공정성을 주기적으로 점검한다.", correct: true },
+                    { id: 'c', text: "특정 사용자가 원하는 결과를 제공한다.", correct: false },
+                    { id: 'd', text: "데이터 수집 과정을 비밀로 유지한다.", correct: false }
                   ]},
                 { id: 6, text: "생활 속에서 AI를 현명하게 사용하는 방법은", explanation: "AI도 실수하거나 편향될 수 있음을 알고, 여러 정보를 비교하며 사용해야 합니다.",
                   options: [
-                    { id: 'a', text: "AI가 주는 정보만 정답이라고 생각한다", correct: false },
-                    { id: 'b', text: "AI가 만든 이미지나 글의 편향성을 살펴본다", correct: true },
-                    { id: 'c', text: "무조건 AI가 시키는 대로 행동한다", correct: false },
-                    { id: 'd', text: "검증되지 않은 AI 결과를 그대로 공유한다", correct: false }
+                    { id: 'a', text: "AI의 답변을 늘 신뢰한다.", correct: false },
+                    { id: 'b', text: "AI가 만든 이미지나 글의 편향성을 살펴본다.", correct: true },
+                    { id: 'c', text: "AI의 판단을 의심하지 않는다.", correct: false },
+                    { id: 'd', text: "AI 결과의 출처를 확인하지 않는다.", correct: false }
                   ]},
                 { id: 7, text: "AI 편향 문제를 해결하기 위해 가장 필요한 가치는", explanation: "다양성을 존중하고 포용하는 가치가 공정한 AI 제작의 핵심입니다.",
                   options: [
@@ -469,24 +469,24 @@
                   ]},
                 { id: 8, text: "다음 중 '데이터 편향'을 방지하는 방법은", explanation: "특정 데이터만 모으지 않고 모든 집단의 정보를 고르게 수집해야 합니다.",
                   options: [
-                    { id: 'a', text: "한 가지 인종의 사진만 대량으로 학습시킨다", correct: false },
-                    { id: 'b', text: "여러 인종과 성별의 정보를 고르게 수집한다", correct: true },
-                    { id: 'c', text: "인터넷에 가장 많은 자료만 사용한다", correct: false },
-                    { id: 'd', text: "데이터 수집을 중단한다", correct: false }
+                    { id: 'a', text: "많은 사람에게 익숙한 자료를 대량으로 학습시킨다.", correct: false },
+                    { id: 'b', text: "여러 인종과 성별에 분포된 자료를 고르게 수집한다.", correct: true },
+                    { id: 'c', text: "인터넷에 가장 많은 자료를 사용한다.", correct: false },
+                    { id: 'd', text: "소수의 자료만 사용하고, 수집을 중단한다.", correct: false }
                   ]},
                 { id: 9, text: "AI 결과를 비판적으로 본다는 것은 무슨 뜻인가요", explanation: "정보를 무조건 믿지 않고 의문을 가지며 다시 확인하는 태도입니다.",
                   options: [
-                    { id: 'a', text: "AI를 전혀 믿지 않는 것", correct: false },
-                    { id: 'b', text: "AI가 제시한 정보에 오류나 편견이 없는지 살피는 것", correct: true },
-                    { id: 'c', text: "AI가 시키는 모든 것을 비난하는 것", correct: false },
-                    { id: 'd', text: "AI 사용자를 나쁘게 생각하는 것", correct: false }
+                    { id: 'a', text: "AI 사용을 거부하는 것", correct: false },
+                    { id: 'b', text: "AI가 제시한 정보에 오류나 편견을 점검하는 것", correct: true },
+                    { id: 'c', text: "AI에게 모든 판단을 맡기는 것", correct: false },
+                    { id: 'd', text: "AI 사용자를 부정적으로 생각하는 것", correct: false }
                   ]},
                 { id: 10, text: "공정한 AI 사회를 만들기 위해 누가 노력해야 하나요", explanation: "개발자뿐만 아니라 사용하는 우리 모두가 관심을 가져야 합니다.",
                   options: [
-                    { id: 'a', text: "AI를 만드는 개발자만 노력하면 된다", correct: false },
-                    { id: 'b', text: "국가에서 법으로 강제하기만 하면 된다", correct: false },
-                    { id: 'c', text: "개발자와 사용자 등 우리 모두가 함께 노력해야 한다", correct: true },
-                    { id: 'd', text: "노력해도 소용없으므로 가만히 있는다", correct: false }
+                    { id: 'a', text: "AI 개발자만 노력하면 된다.", correct: false },
+                    { id: 'b', text: "국가에서 법과 제도를 마련하면 된다.", correct: false },
+                    { id: 'c', text: "개발자와 사용자 등 사회 구성원이 함께 노력해야 한다.", correct: true },
+                    { id: 'd', text: "더 나뻐지지 않도록 기다린다.", correct: false }
                   ]}
             ];
 
