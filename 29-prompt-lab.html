@@ -548,7 +548,7 @@
                     good: "이 문제를 단계별로 생각해서 풀어보자. 먼저 공식을 설명하고, 그다음 숫자를 대입해서 계산 과정을 보여줘.",
                     points: ["사고 방식 유도 (단계별)", "구성 요소 (공식 → 계산)", "논리성 강화"],
                     lesson: "복잡한 문제는 '단계별로 생각하라'는 문구만으로도 정답률이 훨씬 올라갑니다.",
-                    sample: "네, 함께 차근차근 풀어볼까요? \n1단계(공식): 원의 넓이는 $S = \pi r^2$입니다. \n2단계(대입): 반지름 $r$이 3이므로 $3^2$은 9입니다. \n3단계(결과): 따라서 정답은 $9\pi$입니다."
+                    sample: "네, 함께 차근차근 풀어볼까요? \n1단계(공식): 원의 넓이는 S = pi * r^2입니다. \n2단계(대입): 반지름 r이 3이므로 3^2은 9입니다. \n3단계(결과): 따라서 정답은 9π입니다."
                 },
                 {
                     title: "제약 조건",
@@ -721,10 +721,10 @@
                     id: 'q2',
                     question: '다음 중 가장 좋은 프롬프트는?',
                     options: [
-                        { id: 'a', text: '요리 알려줘', correct: false },
+                        { id: 'a', text: '요리하는 법 알려줘', correct: false },
                         { id: 'b', text: '초보자도 30분 안에 만들 수 있는 간단한 파스타 레시피 알려줘', correct: true },
                         { id: 'c', text: '파스타 만드는 법', correct: false },
-                        { id: 'd', text: '맛있는 거 알려줘', correct: false }
+                        { id: 'd', text: '맛있는 음식 알려줘', correct: false }
                     ],
                     explanation: '좋은 프롬프트는 대상(초보자), 시간(30분), 난이도(간단한), 음식 종류(파스타)를 구체적으로 명시합니다!',
                     points: 10
@@ -733,10 +733,10 @@
                     id: 'q3',
                     question: '프롬프트의 결과가 마음에 들지 않을 때 가장 적절한 행동은?',
                     options: [
-                        { id: 'a', text: 'AI가 고장 났다고 생각하고 포기한다', correct: false },
+                        { id: 'a', text: 'AI 대신 다른 방법을 찾는다', correct: false },
                         { id: 'b', text: '같은 질문을 계속 반복해서 물어본다', correct: false },
                         { id: 'c', text: '제약 조건이나 형식을 추가해 구체적으로 수정한다', correct: true },
-                        { id: 'd', text: '질문 없이 AI가 스스로 알아낼 때까지 기다린다', correct: false }
+                        { id: 'd', text: 'AI가 개선될 때까지 기다린다', correct: false }
                     ],
                     explanation: 'AI는 지시에 따라 움직입니다. 답변이 부족하면 프롬프트를 개선(엔지니어링)해야 합니다.',
                     points: 10
@@ -757,7 +757,7 @@
                     id: 'q5',
                     question: '정보를 깔끔하게 정리하고 싶을 때 프롬프트에 추가하기 좋은 문구는?',
                     options: [
-                        { id: 'a', text: '아무렇게나 말해줘', correct: false },
+                        { id: 'a', text: '답만 말해줘', correct: false },
                         { id: 'b', text: '표(Table) 형식으로 정리해줘', correct: true },
                         { id: 'c', text: '최대한 길게 설명해줘', correct: false },
                         { id: 'd', text: '비밀스럽게 알려줘', correct: false }
@@ -794,11 +794,11 @@
                     question: 'AI에게 내가 원하는 출력 스타일을 학습시키기 위해 좋은 방법은?',
                     options: [
                         { id: 'a', text: '예시(Example)를 한두 개 보여준다', correct: true },
-                        { id: 'b', text: 'AI에게 알아서 공부하라고 한다', correct: false },
+                        { id: 'b', text: 'AI 기능을 업그레이드 한다', correct: false },
                         { id: 'c', text: '질문을 아주 짧게 한다', correct: false },
-                        { id: 'd', text: '영어로만 질문한다', correct: false }
+                        { id: 'd', text: '영어로 질문한다', correct: false }
                     ],
-                    explanation: '퓨샷(Few-shot) 기법처럼 원하는 형태의 예시를 제공하면 AI가 패턴을 완벽히 따라합니다.',
+                    explanation: '원하는 형태의 예시를 제공하면 AI가 패턴을 완벽히 따라합니다.',
                     points: 10
                 },
                 {
@@ -808,7 +808,7 @@
                         { id: 'a', text: '책을 많이 추천해줘', correct: false },
                         { id: 'b', text: '베스트셀러 인문학 도서 3권을 추천해줘', correct: true },
                         { id: 'c', text: '인기 있는 책을 빨리 알려줘', correct: false },
-                        { id: 'd', text: '사람들이 읽는 책을 정리해줘', correct: false }
+                        { id: 'd', text: '고등학생들이 자주 읽는 책을 정리해줘', correct: false }
                     ],
                     explanation: '모호한 표현(많이, 빨리)보다 구체적인 숫자(3권)를 쓰면 AI가 더 정확한 양의 결과물을 줍니다.',
                     points: 10
@@ -819,10 +819,10 @@
                     options: [
                         { id: 'a', text: '대상과 목적이 분명하다', correct: false },
                         { id: 'b', text: '역할과 상황 배경이 포함되어 있다', correct: false },
-                        { id: 'c', text: '명령어가 가능한 한 짧고 모호하다', correct: true },
+                        { id: 'c', text: '명령어가 짧고 간결하다', correct: true },
                         { id: 'd', text: '원하는 출력 형식과 제약이 명시되어 있다', correct: false }
                     ],
-                    explanation: '프롬프트는 짧은 것보다 명확하고 구체적인 것이 핵심입니다. 필요한 정보는 충분히 제공해야 합니다.',
+                    explanation: '프롬프트는 짧은 것보다 명확하고 구체적인 것이 핵심입니다. 필요한 정보를 충분히 제공해야 합니다.',
                     points: 10
                 }
             ];
