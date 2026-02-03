@@ -28,14 +28,15 @@
     <div id="root"></div>
     <script type="text/babel">
         const { useState, useRef, useEffect } = React;
-        const MAX_SCORE = 100;
+        const MAX_SCORE = 140; 
 
-        function ChatMessage({ role, text, icon }) {
+        function ChatMessage({ role, text, icon, image }) {
             return (
                 <div className={`flex ${role === 'user' ? 'justify-end' : 'justify-start'} mb-4 fade-in`}>
                     {role === 'ai' && <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center mr-2 flex-shrink-0 text-sm">🤖</div>}
                     <div className={`max-w-[80%] p-4 ${role === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'}`}>
                         <p className="text-sm whitespace-pre-line leading-relaxed">{text}</p>
+                        {image && <img src={image} alt="result" className="mt-3 rounded-lg max-w-xs h-auto shadow-sm border border-gray-100 mx-auto" />}
                     </div>
                     {role === 'user' && <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center ml-2 flex-shrink-0 text-sm text-white">👤</div>}
                 </div>
@@ -45,7 +46,7 @@
         function PromptChallenge() {
             const [stage, setStage] = useState(0);
             const [totalScore, setTotalScore] = useState(0);
-            const [maxReachedStage, setMaxReachedStage] = useState(0); // 사용자가 도달한 최대 단계 추적
+            const [maxReachedStage, setMaxReachedStage] = useState(0);
             const [completedStages, setCompletedStages] = useState({
                 stage1: false, stage2: false, stage3: false, stage4: false
             });
@@ -57,7 +58,6 @@
             
             const goToStage = (stageNum) => setStage(stageNum);
 
-            // 현재 단계가 바뀔 때마다 최대 도달 단계 업데이트
             useEffect(() => {
                 if (stage > maxReachedStage) {
                     setMaxReachedStage(stage);
@@ -101,8 +101,6 @@
                                             const stageNum = idx + 1;
                                             const isCurrentStage = stageNum === stage;
                                             const isCompleted = completedStages[`stage${stageNum}`] || (stageNum === 5 && allStagesCompleted);
-                                            
-                                            // 수정된 로직: 현재 단계보다 이전 단계이거나, 이미 한 번이라도 도달했던 단계라면 클릭 가능
                                             const canAccess = stageNum <= maxReachedStage || allStagesCompleted;
                                             
                                             return (
@@ -203,7 +201,8 @@
                     id: 'c1',
                     topic: '이미지 생성 요청',
                     basicPrompt: '귀여운 강아지가 풀밭에서 노는 그림 그려줘',
-                    basicResult: '강아지 한 마리가 풀밭에 서 있는 그림',
+                    basicResult: '요청하신 귀여운 강아지가 풀밭에 있는 이미지입니다.',
+                    image: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&q=80&w=800',
                     feedback: {
                         problem: '기본 정보는 있지만 여전히 많이 부족해요.',
                         issues: ['강아지의 품종이 명시되지 않음', '어떤 행동인지 불명확 ("노는"이 애매함)', '시간대나 날씨 같은 분위기 없음', '그림 스타일이 지정되지 않음'],
@@ -261,7 +260,7 @@
                 setChatHistory(newHistory);
                 
                 setTimeout(() => {
-                    setChatHistory(prev => [...prev, { role: 'ai', text: currentC.basicResult }]);
+                    setChatHistory(prev => [...prev, { role: 'ai', text: currentC.basicResult, image: currentC.image }]);
                     setShowAnalysis(true);
                 }, 800);
             };
@@ -286,7 +285,7 @@
                     <div className="chat-container mb-8 p-6 flex flex-col min-h-[400px]">
                         <div className="flex-1 overflow-y-auto mb-4">
                             {chatHistory.map((chat, idx) => (
-                                <ChatMessage key={idx} role={chat.role} text={chat.text} />
+                                <ChatMessage key={idx} role={chat.role} text={chat.text} image={chat.image} />
                             ))}
                         </div>
                         
@@ -344,14 +343,14 @@
                     topic: '블로그 포스팅',
                     basicPrompt: '블로그 글 써줘',
                     aiResult: '제목\n내용\n마무리',
-                    question: '이 프롬프트에서 부족한 부분은?',
+                    question: '이 프롬프트의 가장 큰 문제점은?',
                     options: [
                         { id: 'a', text: '제목을 미리 정하지 않았다', correct: false },
                         { id: 'b', text: '어떤 주제에 대해 쓸지, 누구를 위한 글인지 명시하지 않았다', correct: true },
                         { id: 'c', text: '글자 수를 지정하지 않았다', correct: false },
                         { id: 'd', text: '사용할 이미지를 지정하지 않았다', correct: false }
                     ],
-                    explanation: '정답! AI는 무엇에 대해(주제), 누구를 위해(타겟 독자), 어떤 느낌으로(톤) 쓸지를 알아야 의미있는 글을 작성할 수 있어요.',
+                    explanation: 'AI는 무엇에 대해(주제), 누구를 위해(타겟 독자), 어떤 느낌으로(톤) 쓸지를 알아야 의미있는 글을 작성할 수 있어요.',
                     points: 15
                 },
                 {
@@ -366,7 +365,7 @@
                         { id: 'c', text: '회의에서 무엇을 논의했는지, 어떤 결정이 났는지 내용이 없다', correct: true },
                         { id: 'd', text: '회의 참석자 이름을 안 적었다', correct: false }
                     ],
-                    explanation: '정답입니다! 회의의 실제 내용(논의 사항, 결정 사항)이 없으면 AI가 빈 틀만 만들 수밖에 없어요.',
+                    explanation: '회의의 실제 내용(논의 사항, 결정 사항)이 없으면 AI가 빈 틀만 만들 수밖에 없어요.',
                     points: 15
                 },
                 {
@@ -378,10 +377,10 @@
                     options: [
                         { id: 'a', text: '제품 사진', correct: false },
                         { id: 'b', text: '제품 가격', correct: false },
-                        { id: 'c', text: '어떤 제품을 써봤는지, 장단점이 무엇인지', correct: true },
+                        { id: 'c', text: '제품 종류, 장단점', correct: true },
                         { id: 'd', text: '제품을 산 날짜', correct: false }
                     ],
-                    explanation: '정답입니다! 어떤 제품인지, 실제 사용 경험과 장단점을 알려줘야 AI가 실질적인 리뷰를 작성할 수 있어요.',
+                    explanation: '어떤 제품인지, 실제 사용 경험과 장단점을 알려줘야 AI가 실질적인 리뷰를 작성할 수 있어요.',
                     points: 10
                 }
             ];
@@ -460,7 +459,9 @@
                             </div>
                             {showFeedback && (
                                 <div className={`p-6 rounded-2xl mb-6 border-2 ${currentC.options.find(o => o.id === selectedAnswer)?.correct ? 'bg-green-50 border-green-200' : 'bg-orange-50 border-orange-200'}`}>
-                                    <p className="font-bold mb-2">{currentC.options.find(o => o.id === selectedAnswer)?.correct ? '🎉 정답입니다!' : '💡 다시 확인해볼까요?'}</p>
+                                    <p className="font-bold mb-2">
+                                        {currentC.options.find(o => o.id === selectedAnswer)?.correct ? '🎉 정답입니다!' : '💡 오답입니다. 다시 확인해볼까요?'}
+                                    </p>
                                     <p className="text-gray-700">{currentC.explanation}</p>
                                     <button onClick={handleNext} className="w-full mt-4 bg-purple-600 text-white py-4 rounded-xl font-bold">
                                         {currentChallenge < challenges.length - 1 ? '다음 문제 ➜' : '3단계로 이동 ➜'}
@@ -476,7 +477,7 @@
         function Stage3({ goToStage, markStageComplete }) {
             const [currentChallenge, setCurrentChallenge] = useState(0);
             const [chatHistory, setChatHistory] = useState([]);
-            const [stepInChallenge, setStepInChallenge] = useState(0); // 0: 시작, 1: 기본결과완료, 2: 개선결과완료
+            const [stepInChallenge, setStepInChallenge] = useState(0);
 
             const challenges = [
                 {
@@ -486,7 +487,8 @@
                     basicResult: '즐거운 하루입니다. #일상 #소통 #좋아요',
                     improvedPrompt: '카페 창업 3주년을 축하하는 인스타그램 캡션을 써줘. 감사 인사와 함께 이번 주 특별 이벤트(아메리카노 1+1)를 자연스럽게 홍보하고, 해시태그 5개 포함해줘. 친근하고 따뜻한 톤으로',
                     improvedResult: '우리 카페가 벌써 3주년을 맞이했어요! 🎉\n\n항상 찾아주시는 모든 분들 덕분에 여기까지 올 수 있었어요. 진심으로 감사드립니다 ☕️💕\n\n감사의 마음을 담아 이번 주 내내 아메리카노 1+1 이벤트를 진행해요! 소중한 분과 함께 맛있는 커피 한 잔 어떠세요?\n\n앞으로도 더 좋은 커피와 따뜻한 공간으로 찾아뵐게요 🌟\n\n#카페3주년 #감사이벤트 #아메리카노1+1 #동네카페 #커피스타그램',
-                    suggestions: ['목적 명시 (3주년 축하)', '구체적 이벤트 (아메리카노 1+1)', '톤 지정 (친근하고 따뜻하게)', '형식 요청 (해시태그 5개)']
+                    suggestions: ['목적 명시 (3주년 축하)', '구체적 이벤트 (아메리카노 1+1)', '톤 지정 (친근하고 따뜻하게)', '형식 요청 (해시태그 5개)'],
+                    summaryFeedback: '단순히 "글 써줘"라고 하기보다 인스타그램처럼 플랫폼의 특성에 맞는 톤과 해시태그 개수, 홍보할 이벤트를 정확히 짚어주는 것이 핵심입니다.'
                 },
                 {
                     id: 'c2',
@@ -495,7 +497,8 @@
                     basicResult: '1. 재료를 준비한다. 2. 냄비에 넣고 끓인다. 3. 간을 맞춘다.',
                     improvedPrompt: '혼자 사는 직장인을 위한 10분 완성 김치볶음밥 레시피를 알려줘. 1인분 기준으로 재료와 분량을 명시하고, 요리 초보도 따라할 수 있게 각 단계마다 팁을 추가해줘',
                     improvedResult: '⏰ 10분 완성! 직장인 김치볶음밥\n\n📋 재료 (1인분)\n• 밥 1공기 (차가운 밥이 더 좋아요)\n• 김치 100g (송송 썰기)\n• 식용유 1큰술\n• 간장 1작은술\n• 참기름 1작은술\n\n👨‍🍳 조리법\n1. 달군 팬에 식용유 두르기\n   💡 TIP: 센 불로 예열하면 볶음밥이 눌러붙지 않아요\n2. 썬 김치 볶기 (2분)\n   💡 TIP: 김치가 살짝 투명해질 때까지!\n3. 밥 넣고 볶은 뒤 참기름으로 마무리!\n\n🎉 든든한 한 끼 완성이에요!',
-                    suggestions: ['타겟 명시 (혼자 사는 직장인)', '시간 제한 (10분)', '요리명 구체화 (김치볶음밥)', '배려 요청 (초보용 팁)']
+                    suggestions: ['타겟 명시 (혼자 사는 직장인)', '시간 제한 (10분)', '요리명 구체화 (김치볶음밥)', '배려 요청 (초보용 팁)'],
+                    summaryFeedback: '요리 레시피는 대상을 누구로 하느냐에 따라 설명의 깊이가 달라집니다. "초보"를 위한 팁을 요청하자 훨씬 친절하고 구체적인 가이드가 생성되었습니다.'
                 },
                 {
                     id: 'c3',
@@ -504,7 +507,18 @@
                     basicResult: '태양계에는 수성, 금성, 지구, 화성, 목성, 토성, 천왕성, 해왕성이 있습니다.',
                     improvedPrompt: '초등학교 3학년 학생들이 태양계를 쉽게 이해할 수 있는 학습 자료를 만들어줘. 각 행성의 특징을 이모지와 함께 간단하게 설명하고, 기억하기 쉬운 순서 암기법도 포함해줘',
                     improvedResult: '🌟 태양계 여행을 떠나볼까요?\n\n🌞 태양: 우리 태양계의 중심!\n🌍 지구: 우리가 사는 푸른 행성\n🪐 토성: 아름다운 고리가 있어요\n\n💡 암기 꿀팁!\n"수금지화목토천해" 앞글자만 따서 노래처럼 외워봐요!\n아이들 눈높이에 맞춘 행성별 이모지 설명이 포함되었습니다.',
-                    suggestions: ['대상 연령 (초3)', '주제 명시 (태양계)', '형식 요청 (이모지 활용)', '추가 요소 (암기법)']
+                    suggestions: ['대상 연령 (초3)', '주제 명시 (태양계)', '형식 요청 (이모지 활용)', '추가 요소 (암기법)'],
+                    summaryFeedback: '어린이 교육용 자료는 "눈높이"가 중요합니다. 대상 연령을 명시하고 이모지나 암기법 같은 구체적인 도구를 요구하면 AI는 훨씬 창의적인 교육자가 됩니다.'
+                },
+                {
+                    id: 'c4',
+                    topic: 'IT 기기 리뷰 블로그',
+                    basicPrompt: '스마트폰 리뷰 써줘',
+                    basicResult: '이번에 나온 스마트폰은 디자인이 예쁘고 속도가 빠릅니다. 추천합니다.',
+                    improvedPrompt: '최신 아이폰15 프로의 1주일 사용 후기를 전문적인 테크 블로그 스타일로 써줘. 디자인, 카메라 성능, 배터리 지속시간이라는 3가지 소주제로 나누고, 실제 사용해본 사람만 알 수 있는 장점과 단점을 하나씩 포함해서 상세하게 작성해줘',
+                    improvedResult: '📱 아이폰15 프로, 1주일간 써보니 어떨까? (실사용 리뷰)\n\n1. 티타늄의 가벼움, 디자인의 변화\n이번 모델의 핵심은 소재입니다. 1주일간 들어보니 확실히 손목의 피로도가 줄어든 것이 체감됩니다.\n\n2. 프로 레벨의 카메라 경험\n새로운 줌 렌즈는 놀랍지만, 야간 촬영 시 고스트 현상은 여전히 아쉬운 부분입니다.\n\n3. 배터리 성능과 발열\n헤비한 게임 실행 시 약간의 발열이 느껴지나, 일반적인 사용에서는 하루 종일 버티기에 충분했습니다.',
+                    suggestions: ['제품명 명시 (아이폰15 프로)', '글의 구조 지정 (3가지 소주제)', '리뷰 스타일 (전문 테크 블로그)', '내용 조건 (장단점 포함)'],
+                    summaryFeedback: '리뷰는 "진정성"과 "상세함"이 생명입니다. 소주제를 나누어 지정하고 장단점을 구체적으로 요구하면 AI는 단순 나열이 아닌 입체적인 분석글을 작성합니다.'
                 }
             ];
 
@@ -598,7 +612,7 @@
                     {stepInChallenge === 2 && (
                         <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-6 fade-in text-center">
                             <p className="text-gray-700 text-sm">
-                                단순히 "써줘"라고 하기보다 <b>대상, 목적, 톤, 형식</b>을 지정하는 것만으로도 품질이 달라집니다.
+                                💡 <b>학습 포인트:</b> {currentC.summaryFeedback}
                             </p>
                         </div>
                     )}
@@ -621,7 +635,7 @@
                         { id: 'a', text: '1분기 매출 데이터를 정리해서 보고서로 만들어줘. 전년 대비 증감률도 계산해줘', correct: false },
                         { id: 'b', text: '1분기 매출 데이터를 분석해서 보고서로 만들어줘. 전년 대비 증감률과 개선 제안도 포함해줘', correct: true }
                     ],
-                    explanation: '정답입니다! 실제 답변 맨 아래에 【개선 제안】섹션이 있어요. A는 데이터를 "정리"만 했지만, B는 "분석"하고 "개선 제안"까지 요청했기 때문에 더 유용한 보고서가 나왔습니다.',
+                    explanation: '실제 답변 맨 아래에 【개선 제안】섹션이 있어요. A는 데이터를 "정리"만 했지만, B는 "분석"하고 "개선 제안"까지 요청했기 때문에 더 유용한 보고서가 나왔습니다.',
                     points: 20
                 },
                 {
@@ -632,7 +646,7 @@
                         { id: 'a', text: 'Python 코드를 리뷰해줘. 좋은 점과 개선점을 나눠서 설명하고, 개선 부분은 Before/After 코드로 보여줘', correct: true },
                         { id: 'b', text: 'Python 코드를 전문적으로 리뷰해줘. 좋은 점, 개선점, 심각도 분석, 리팩토링 우선순위, 보안 취약점 검토, 성능 프로파일링, 테스트 커버리지 분석을 포함하고 각 항목마다 Before/After 코드와 성능 비교 수치를 제공해줘', correct: false }
                     ],
-                    explanation: '정답입니다! 실제 답변은 좋은 점, 개선점, Before/After 코드라는 "핵심 내용"만 간결하게 담고 있어요. A는 필요한 것만 요청해서 명확한 리뷰를 받았지만, B는 너무 많은 것을 요청해서 오히려 복잡해질 수 있어요.',
+                    explanation: '실제 답변은 좋은 점, 개선점, Before/After 코드라는 "핵심 내용"만 간결하게 담고 있어요. A는 필요한 것만 요청해서 명확한 리뷰를 받았지만, B는 너무 많은 것을 요청해서 오히려 복잡해질 수 있어요.',
                     points: 20
                 },
                 {
@@ -643,7 +657,29 @@
                         { id: 'a', text: '반려동물 AI 앱 투자 피칭 자료를 만들어줘. 문제, 솔루션, 시장 분석, 차별점을 포함해줘', correct: false },
                         { id: 'b', text: '반려동물 AI 앱 투자 피칭 자료를 만들어줘. 문제, 솔루션, 시장 분석과 함께 구체적인 수익 모델과 목표 수치를 포함해줘', correct: true }
                     ],
-                    explanation: '정답입니다! 실제 답변에는 【수익 모델】과 【목표】 섹션이 구체적 숫자와 함께 있어요. A는 추상적 내용만 요청했지만, B는 "구체적 수익 모델과 목표 수치"를 요청했기 때문에 투자자를 설득할 수 있는 자료가 나왔습니다.',
+                    explanation: '실제 답변에는 【수익 모델】과 【목표】 섹션이 구체적 숫자와 함께 있어요. A는 추상적 내용만 요청했지만, B는 "구체적 수익 모델과 목표 수치"를 요청했기 때문에 투자자를 설득할 수 있는 자료가 나왔습니다.',
+                    points: 20
+                },
+                {
+                    id: 'q4',
+                    aiResult: '✈️ [3박 4일 제주도 힐링 여행 계획]\n\n【1일차: 동쪽 해안 코스】\n• 오후 2시: 제주 공항 도착 및 렌터카 픽업\n• 오후 4시: 함덕 해수욕장 산책 (에메랄드빛 바다 감상)\n• 오후 6시: 흑돼지 구이 석식\n\n【2일차: 숲과 자연】\n• 오전 10시: 사려니숲길 걷기 (삼나무 힐링)\n• 오후 2시: 성산일출봉 조망 및 광치기 해변\n• 오후 5시: 빛의 벙커 전시 관람\n\n【추천 맛집 리스트】\n1. 〇〇식당 (갈치조림, 가성비 최고)\n2. △△카페 (바다뷰가 멋진 베이커리)\n\n【여행 팁】\n• 동쪽은 바람이 강하니 얇은 겉옷을 챙기세요.\n• 맛집은 미리 테이블링 앱으로 예약하는 것이 좋습니다.',
+                    question: '이 답변을 만든 프롬프트는?',
+                    options: [
+                        { id: 'a', text: '제주도 여행 일정 짜줘', correct: false },
+                        { id: 'b', text: '3박 4일 제주도 힐링 여행 일정을 짜줘. 일차별 주요 동선과 추천 맛집, 간단한 여행 팁도 포함해줘', correct: true }
+                    ],
+                    explanation: '답변에 기간(3박 4일), 컨셉(힐링), 구성(일차별 동선, 맛집, 팁)이 정확히 들어있습니다. B처럼 구체적인 구성 요소를 요청해야 정갈한 계획표를 얻을 수 있습니다.',
+                    points: 20
+                },
+                {
+                    id: 'q5',
+                    aiResult: '✨ [신제품: 울트라 경량 텀블러 상세 페이지]\n\n【제품 헤드라인】\n"당신의 어깨가 가벼워지는 순간, 단 150g의 기적"\n\n【핵심 소구점 (USP)】\n1. 초경량 설계: 스마트폰보다 가벼운 150g으로 휴대성 극대화\n2. 강력 보온/보냉: 24시간 온도 유지 (이중 진공 구조)\n3. 친환경 소재: 환경 호르몬 걱정 없는 프리미엄 스테인리스\n\n【사용 타겟별 문구】\n• 직장인: "출퇴근길 가방 속, 무게감 없이 챙기세요."\n• 등산객: "정상에서 마시는 얼음물, 한 방울까지 시원하게."\n\n【구매 유도 (CTA)】\n지금 구매 시 전용 세척 솔 무료 증정! (한정 수량)',
+                    question: '이 답변을 만든 프롬프트는?',
+                    options: [
+                        { id: 'a', text: '가벼운 텀블러 상세 페이지에 들어갈 내용을 써줘. 제품의 특징과 타겟별 문구, 구매 혜택을 포함해서 마케팅적으로 작성해줘', correct: true },
+                        { id: 'b', text: '텀블러 홍보글 하나 써줘', correct: false }
+                    ],
+                    explanation: '답변을 보면 단순 홍보글이 아니라 상세 페이지 구조(헤드라인, USP, 타겟 문구, CTA)를 갖추고 있습니다. A처럼 마케팅적 구성 요소를 지정하면 훨씬 전문적인 문안이 생성됩니다.',
                     points: 20
                 }
             ];
@@ -677,7 +713,7 @@
                     <div className="text-center mb-8">
                         <div className="text-6xl mb-6 bounce">🎯</div>
                         <h2 className="text-3xl font-bold text-gray-800 mb-4">4단계: 프롬프트 추론하기</h2>
-                        <div className="mt-4 inline-block bg-purple-100 px-4 py-2 rounded-full font-bold text-purple-800">획득 점수: {earnedScore}점 / 60점</div>
+                        <div className="mt-4 inline-block bg-purple-100 px-4 py-2 rounded-full font-bold text-purple-800">획득 점수: {earnedScore}점 / 100점</div>
                     </div>
                     <div className="bg-gray-50 border-2 border-gray-200 rounded-2xl p-6 mb-6">
                         <div className="flex items-center mb-4">
@@ -701,7 +737,10 @@
                         ))}
                     </div>
                     {showFeedback && (
-                        <div className="mt-6 p-6 bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl">
+                        <div className={`mt-6 p-6 rounded-2xl border-2 border-dashed ${currentQ.options.find(o => o.id === selectedAnswer)?.correct ? 'bg-green-50 border-green-300' : 'bg-orange-50 border-orange-300'}`}>
+                            <p className="font-bold mb-2">
+                                {currentQ.options.find(o => o.id === selectedAnswer)?.correct ? '🎉 정답입니다!' : '💡 오답입니다.'}
+                            </p>
                             <p className="text-gray-800 leading-relaxed">{currentQ.explanation}</p>
                             <button onClick={handleNext} className="w-full mt-4 bg-purple-600 text-white py-4 rounded-xl font-bold">다음 문제 ➜</button>
                         </div>
@@ -727,8 +766,8 @@
             useEffect(() => { if (allChecked) { setAllStagesCompleted(true); } }, [allChecked]);
 
             let level = '', emoji = '', rank = '', comment = '';
-            if (totalScore >= 80) { level = '프롬프트 마스터'; emoji = '🏆'; rank = 'MASTER'; comment = '최고 수준!'; }
-            else if (totalScore >= 60) { level = '프롬프트 전문가'; emoji = '🎓'; rank = 'EXPERT'; comment = '뛰어난 실력!'; }
+            if (totalScore >= 110) { level = '프롬프트 마스터'; emoji = '🏆'; rank = 'MASTER'; comment = '최고 수준!'; }
+            else if (totalScore >= 80) { level = '프롬프트 전문가'; emoji = '🎓'; rank = 'EXPERT'; comment = '뛰어난 실력!'; }
             else { level = '프롬프트 학습자'; emoji = '🌱'; rank = 'BEGINNER'; comment = '좋은 출발!'; }
 
             const downloadCert = () => {
